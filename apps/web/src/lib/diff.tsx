@@ -9,31 +9,47 @@ function tokenize(text: string): string[] {
   return text.match(/\S+|\s+/g) ?? [];
 }
 
-export type DiffResult =
-  | { available: true; left: DiffToken[]; right: DiffToken[]; reason: null }
-  | { available: false; left: null; right: null; reason: string };
+export type DiffResult = {
+  available: true;
+  left: DiffToken[];
+  right: DiffToken[];
+  mode: "exact" | "line" | "streaming";
+  reason: null;
+};
 
 const MAX_DIFF_TOKENS = 900;
 const MAX_DIFF_CELLS = 180000;
+const MAX_LINE_DIFF_CELLS = 260000;
 
 export function safeDiffTokens(leftText: string, rightText: string): DiffResult {
-  const leftCount = tokenize(leftText).length;
-  const rightCount = tokenize(rightText).length;
-  if (leftCount + rightCount > MAX_DIFF_TOKENS || leftCount * rightCount > MAX_DIFF_CELLS) {
-    return {
-      available: false,
-      left: null,
-      right: null,
-      reason: "Diff skipped for this long response. Use shorter generations or compare the rendered panes."
-    };
+  const leftTokens = tokenize(leftText);
+  const rightTokens = tokenize(rightText);
+  if (leftTokens.length + rightTokens.length <= MAX_DIFF_TOKENS && leftTokens.length * rightTokens.length <= MAX_DIFF_CELLS) {
+    const diff = diffUnits(leftTokens, rightTokens);
+    return { available: true, left: diff.left, right: diff.right, mode: "exact", reason: null };
   }
-  const diff = diffTokens(leftText, rightText);
-  return { available: true, left: diff.left, right: diff.right, reason: null };
+
+  const leftLines = splitLines(leftText);
+  const rightLines = splitLines(rightText);
+  if (leftLines.length * rightLines.length <= MAX_LINE_DIFF_CELLS) {
+    const diff = diffUnits(leftLines, rightLines);
+    return { available: true, left: diff.left, right: diff.right, mode: "line", reason: null };
+  }
+
+  const diff = streamingLineDiff(leftLines, rightLines);
+  return { available: true, left: diff.left, right: diff.right, mode: "streaming", reason: null };
 }
 
 export function diffTokens(leftText: string, rightText: string): { left: DiffToken[]; right: DiffToken[] } {
-  const a = tokenize(leftText);
-  const b = tokenize(rightText);
+  return diffUnits(tokenize(leftText), tokenize(rightText));
+}
+
+function splitLines(text: string): string[] {
+  if (!text) return [];
+  return text.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+}
+
+function diffUnits(a: string[], b: string[]): { left: DiffToken[]; right: DiffToken[] } {
   const table = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0));
 
   for (let i = a.length - 1; i >= 0; i -= 1) {
@@ -69,6 +85,26 @@ export function diffTokens(leftText: string, rightText: string): { left: DiffTok
   while (j < b.length) {
     rightTokens.push({ value: b[j], kind: b[j].trim() ? "added" : "same" });
     j += 1;
+  }
+
+  return { left: leftTokens, right: rightTokens };
+}
+
+function streamingLineDiff(a: string[], b: string[]): { left: DiffToken[]; right: DiffToken[] } {
+  const leftTokens: DiffToken[] = [];
+  const rightTokens: DiffToken[] = [];
+  const length = Math.max(a.length, b.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const leftLine = a[index];
+    const rightLine = b[index];
+    if (leftLine === rightLine) {
+      if (leftLine !== undefined) leftTokens.push({ value: leftLine, kind: "same" });
+      if (rightLine !== undefined) rightTokens.push({ value: rightLine, kind: "same" });
+      continue;
+    }
+    if (leftLine !== undefined) leftTokens.push({ value: leftLine, kind: leftLine.trim() ? "removed" : "same" });
+    if (rightLine !== undefined) rightTokens.push({ value: rightLine, kind: rightLine.trim() ? "added" : "same" });
   }
 
   return { left: leftTokens, right: rightTokens };

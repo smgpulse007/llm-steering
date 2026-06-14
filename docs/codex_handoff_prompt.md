@@ -170,6 +170,7 @@ Required views/components:
 - Metrics panel with vector norm, cosine agreement, separability, output deltas.
 - Artifact drawer with result JSON, vector metadata, and CLI reproduction command.
 - Logs panel for backend events and model warnings.
+- Auto diff must not be skipped for long responses; use exact word diff for moderate outputs and line/streaming fallback for long outputs.
 
 Visual design:
 

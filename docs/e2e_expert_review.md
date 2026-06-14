@@ -18,13 +18,14 @@ The first word-level diff implementation used an LCS table directly against both
 Resolution:
 
 - `apps/web/src/lib/diff.tsx` now exposes `safeDiffTokens`.
-- Diff generation is capped by token count and cell count.
-- When an output is too long, the UI skips the diff and keeps the rendered Markdown panes visible.
+- Diff generation uses exact word-level LCS for moderate outputs.
+- Larger outputs fall back to exact line-level diffing or a streaming line diff.
+- The UI always shows diff highlights when auto diff is enabled; it no longer skips long responses.
 
 Remaining work:
 
 - Move diffing to a Web Worker if very long generated outputs become a core workflow.
-- Consider line-first diffing before token diffing.
+- Consider patience-diff style line alignment for the largest streaming fallback.
 
 ### Medium: model output was not rendered like an LLM tool
 
@@ -190,4 +191,3 @@ python -m json.tool research\verified_sources.json
 ```
 
 Result: source registry JSON parsed successfully.
-

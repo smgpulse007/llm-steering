@@ -62,7 +62,7 @@ Model responses must render like a normal Markdown preview:
 - tables
 - bold/italic formatting
 
-Diff highlighting must not replace the main rendered answer. It should be a secondary view or panel that helps compare the baseline and steered outputs.
+Diff highlighting must not replace the main rendered answer. It should be a secondary view or panel that helps compare the baseline and steered outputs. Auto diff should remain available for long responses by falling back from exact word-level diffing to line-level or streaming diffing instead of skipping the comparison.
 
 ## Control Knob Explanations
 

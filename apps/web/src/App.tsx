@@ -844,7 +844,13 @@ function OutputPane({
   diffResult: DiffResult | null;
   side: "left" | "right";
 }) {
-  const diffContent = diffResult?.available ? diffResult[side] : null;
+  const diffContent = diffResult ? diffResult[side] : null;
+  const diffLabel =
+    diffResult?.mode === "exact"
+      ? "Exact word-level diff"
+      : diffResult?.mode === "line"
+        ? "Long response line-level diff"
+        : "Long response streaming diff";
   return (
     <section className={`glass-panel output-pane ${tone}`}>
       <div className="panel-title">
@@ -855,10 +861,9 @@ function OutputPane({
       {diffContent ? (
         <details className="diff-panel" open>
           <summary>Automatic diff highlights</summary>
+          <small className="diff-mode">{diffLabel}</small>
           <div className="diff-body">{renderDiffTokens(diffContent)}</div>
         </details>
-      ) : diffResult && !diffResult.available ? (
-        <p className="diff-skipped">{diffResult.reason}</p>
       ) : null}
     </section>
   );

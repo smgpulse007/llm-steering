@@ -13,6 +13,8 @@ This repository turns that idea into a practical engineering lab:
 - **source-backed research notes** for keeping implementation choices tied to the literature rather than folklore
 - **public showcase assets** for explaining steering to the general public without hand-wavy demo theater
 
+The current posture is a full starter kit: a reproducible Python steering path, a registry-backed FastAPI layer, and a polished local workbench UI for choosing a model, tuning steering controls, comparing outputs, and learning the math behind the intervention.
+
 ## Project thesis
 
 The thesis of this project is not merely “steering vectors are neat.” It is more specific:
@@ -64,11 +66,13 @@ The repo now includes a functional steering workbench shell for the open-source 
 - preset use cases for support, tutoring, launch risk, and code review
 - baseline vs steered comparison panes
 - ChatGPT-style markdown rendering for model output
-- automatic word-level diff highlighting for baseline vs steered output
+- always-on hybrid word/line diff highlighting for baseline vs steered output
 - vector diagnostics and reliability labels
 - separate explainability tab with math, architecture flow, research trail, and model support roadmap
 - artifact drawer with reproducible command metadata
 - safety gating for DiffusionGemma, Qwen3.6, and Qwen3-Coder-Next until validation passes
+
+![Steering workbench UI](docs/assets/workbench_ui_overview.gif)
 
 Run the API:
 
@@ -148,6 +152,8 @@ Together, these demos make the central point of the repo clearer: activation ste
 
 These assets are generated from the local showcase script and illustrate the public-facing examples referenced in this README:
 
+- ![Workbench UI overview](docs/assets/workbench_ui_overview.gif)
+- ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 - ![Post-activation steering demo](docs/assets/post_activation_demo.gif)
 - ![Pre-activation steering demo](docs/assets/pre_activation_demo.gif)
 - ![Pre-vs-post comparison demo](docs/assets/pre_vs_post_demo.gif)
@@ -158,6 +164,14 @@ The corresponding machine-readable outputs live in:
 - `docs/showcase/pre_post_showcase.json`
 - `docs/showcase/use_case_showcase.json`
 - `docs/showcase/ollama_vs_hf_baseline.json`
+
+The setup GIF can be rebuilt with:
+
+```powershell
+python scripts/build_readme_media.py --skip-ui
+```
+
+The workbench GIF is assembled from captured frames of the running app. Place PNG frames in `.tmp/readme_ui_frames/` and run `python scripts/build_readme_media.py` to rebuild `docs/assets/workbench_ui_overview.gif`.
 
 For terminal-recording enthusiasts: `docs/tapes/` includes optional VHS notes so you can create terminal-native GIFs on compatible setups. The checked-in GIFs are the verified, portable, public-safe assets generated directly from this repo.
 
@@ -314,6 +328,8 @@ The repo already supports several common decoder-layer layouts through `LAYER_PA
 The model registry that drives the workbench lives in `src/llm_steering/model_registry.py`. Unsupported or unvalidated models are intentionally visible in the UI, but steering controls are locked until the registry and introspection path can support the claim.
 
 ## Quick start
+
+![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 
 ### 1. Clone and create a virtual environment
 
