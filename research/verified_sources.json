@@ -158,5 +158,101 @@
     "verified_on": "2026-05-09",
     "summary": "Hugging Face collection page grouping Google-published Gemma-adjacent variants and related release collections, including Gemma Scope and ShieldGemma references.",
     "why_it_matters": "Useful index for future expansion from base Gemma steering into Scope, safety, embedding, and related Gemma-family work."
+  },
+  {
+    "title": "DiffusionGemma launch post",
+    "kind": "official_docs",
+    "url": "https://blog.google/innovation-and-ai/technology/developers-tools/diffusion-gemma-faster-text-generation/",
+    "verified_on": "2026-06-14",
+    "summary": "Google announcement for DiffusionGemma, describing the 26B MoE open experimental model, block-style text diffusion, Apache 2.0 availability, speed positioning, local GPU focus, and quality tradeoffs versus standard Gemma 4.",
+    "why_it_matters": "Primary source for public release status and product positioning of DiffusionGemma."
+  },
+  {
+    "title": "DiffusionGemma developer guide",
+    "kind": "official_docs",
+    "url": "https://developers.googleblog.com/en/diffusiongemma-the-developer-guide/",
+    "verified_on": "2026-06-14",
+    "summary": "Developer-focused guide explaining DiffusionGemma's 256-token canvas, block autoregressive denoising, prefill/denoising phases, vLLM serving flags, and adapter/fine-tuning pointers.",
+    "why_it_matters": "Shows why DiffusionGemma needs runtime-specific handling rather than a naive causal-LM adapter."
+  },
+  {
+    "title": "DiffusionGemma model overview",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/diffusiongemma",
+    "verified_on": "2026-06-14",
+    "summary": "Google AI docs page for DiffusionGemma within the Gemma documentation set.",
+    "why_it_matters": "Official documentation entry point for DiffusionGemma behavior, model card, and generation guidance."
+  },
+  {
+    "title": "DiffusionGemma 26B A4B IT Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/google/diffusiongemma-26B-A4B-it",
+    "verified_on": "2026-06-14",
+    "summary": "Hugging Face model card for `google/diffusiongemma-26B-A4B-it`, listing Apache 2.0 license, Transformers support, DiffusionGemma architecture, model loading examples, benchmark table, and core capabilities.",
+    "why_it_matters": "Primary model ID and implementation reference for adding DiffusionGemma to the model registry."
+  },
+  {
+    "title": "Qwen3.6 repository",
+    "kind": "official_code",
+    "url": "https://github.com/QwenLM/Qwen3.6",
+    "verified_on": "2026-06-14",
+    "summary": "Official Qwen3.6 repository with release timeline, quickstart, local usage, API usage, and links to Qwen3.6 model variants.",
+    "why_it_matters": "Primary source for identifying Qwen3.6 as the current general Qwen model family target."
+  },
+  {
+    "title": "Qwen3.6-27B Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/Qwen/Qwen3.6-27B",
+    "verified_on": "2026-06-14",
+    "summary": "Qwen model card for the 27B Qwen3.6 variant, including serving guidance, long-context notes, and OpenAI-compatible API examples.",
+    "why_it_matters": "Main Qwen3.6 target for initial adapter and steering validation."
+  },
+  {
+    "title": "Qwen3.6-35B-A3B Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B",
+    "verified_on": "2026-06-14",
+    "summary": "Qwen model card for the 35B-A3B MoE Qwen3.6 variant.",
+    "why_it_matters": "Higher-capability Qwen3.6 MoE target that needs explicit MoE-aware runtime validation."
+  },
+  {
+    "title": "Qwen3-Coder-Next Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/Qwen/Qwen3-Coder-Next",
+    "verified_on": "2026-06-14",
+    "summary": "Qwen model card for Qwen3-Coder-Next, describing an open-weight coding-agent model with 80B total parameters, 3B active parameters, 256K context, and a hybrid DeltaNet/attention/MoE layout.",
+    "why_it_matters": "Important coding/agent steering target, but architecture differences make it a high-risk adapter target."
+  },
+  {
+    "title": "Understanding (Un)Reliability of Steering Vectors in Language Models",
+    "kind": "paper",
+    "url": "https://arxiv.org/html/2505.22637v1",
+    "verified_on": "2026-06-14",
+    "summary": "Recent steering reliability study showing that prompt choice, directional agreement, and positive/negative separability affect whether steering vectors work reliably.",
+    "why_it_matters": "Supports adding vector diagnostics and reliability explanations to the UI instead of presenting steering as a guaranteed control knob."
+  },
+  {
+    "title": "Phi-4-mini-instruct Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/microsoft/Phi-4-mini-instruct",
+    "verified_on": "2026-06-14",
+    "summary": "Microsoft model card for a 3.8B Phi-4 mini instruction model with MIT license, Transformers examples, vLLM/SGLang serving paths, and 128K-context positioning.",
+    "why_it_matters": "Good near-term non-Gemma support candidate because it is small, open, and exposes a conventional Transformers causal-LM path."
+  },
+  {
+    "title": "Ministral 3 3B Instruct 2512 Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/mistralai/Ministral-3-3B-Instruct-2512",
+    "verified_on": "2026-06-14",
+    "summary": "Mistral AI model card for a small Apache 2.0 Ministral 3 instruction model with 3.4B language component, vision encoder, 256K context, FP8/BF16 notes, and Transformers/vLLM usage guidance.",
+    "why_it_matters": "Promising small steering target, but loader and text-only hook compatibility must be validated because of FP8 and multimodal packaging."
+  },
+  {
+    "title": "Llama 4 Scout Hugging Face model card",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "verified_on": "2026-06-14",
+    "summary": "Meta model card describing Llama 4 Scout as a multimodal MoE model with 17B active parameters, 109B total parameters, and a 10M-token context window.",
+    "why_it_matters": "Important open model family to track, but MoE scale and multimodality make it a validation target rather than the fastest local support candidate."
   }
 ]

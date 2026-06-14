@@ -42,6 +42,8 @@ Typical users include:
 The current repository supports:
 
 - local Hugging Face loading for `google/gemma-4-E2B-it`
+- a registry-backed FastAPI workbench API for model support status, runtime settings, and gated experiment runs
+- a Vite + React + TypeScript workbench UI under `apps/web`
 - prompt-pair steering-vector extraction
 - single-pair ActAdd-style steering
 - mean-difference vector construction across multiple pairs
@@ -50,6 +52,45 @@ The current repository supports:
 - token targeting for either `last_token` or `all_tokens`
 - compact JSON artifact generation for public demos
 - optional Ollama-vs-HF runtime baseline comparison
+
+## Steering workbench UI
+
+The repo now includes a functional steering workbench shell for the open-source release path. It is designed as an operational console rather than a landing page:
+
+- model picker with explicit support badges
+- runtime/introspection status
+- prompt-pair dataset editor
+- steering controls for layer, coefficient, hook stage, token scope, normalization, and decoding settings
+- preset use cases for support, tutoring, launch risk, and code review
+- baseline vs steered comparison panes
+- ChatGPT-style markdown rendering for model output
+- automatic word-level diff highlighting for baseline vs steered output
+- vector diagnostics and reliability labels
+- separate explainability tab with math, architecture flow, research trail, and model support roadmap
+- artifact drawer with reproducible command metadata
+- safety gating for DiffusionGemma, Qwen3.6, and Qwen3-Coder-Next until validation passes
+
+Run the API:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn scripts.serve_api:app --host 127.0.0.1 --port 8000
+```
+
+Run the UI:
+
+```powershell
+cd apps/web
+npm install
+npm run dev
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5173
+```
+
+The UI proxies `/api/*` calls to `http://127.0.0.1:8000` during development. The workbench can display the registry without the API through a small fallback snapshot, but real experiment runs require the Python API and local model access.
 
 ## Real starter-kit use cases
 
@@ -163,7 +204,7 @@ $$
 Inject the vector before the chosen transformer block consumes its input:
 
 $$
-	ilde{h}^{\text{in}}_{l,t} = h^{\text{in}}_{l,t} + \alpha \hat{v}
+\tilde{h}^{\text{in}}_{l,t} = h^{\text{in}}_{l,t} + \alpha \hat{v}
 $$
 
 ### Mean-difference vectors
@@ -255,11 +296,22 @@ The repo already supports several common decoder-layer layouts through `LAYER_PA
 
 | Model path | Status | Notes |
 | --- | --- | --- |
-| `google/gemma-4-E2B-it` | verified | best current starting point for fast local steering iteration |
-| `google/gemma-4-E4B-it` | expected extension | next step once layer/coefficient sweeps are stable |
-| `gemma4` via Ollama | verified baseline | useful for qualitative runtime comparison |
-| Gemma 4 26B / 31B variants | roadmap | larger context and compute envelope; not the first target for this repo |
-| Non-Gemma decoder models | possible | supported if the transformer-layer path matches one of the patterns in `locate_transformer_layers()` |
+| `google/gemma-4-E2B-it` | verified steering baseline | best current starting point for fast local steering iteration |
+| `google/gemma-4-E4B-it` | needs validation | expected Gemma-family extension after layer/coefficient sweeps |
+| `google/gemma-4-12B-it` | needs hardware validation | stronger Gemma target for users with enough local/served capacity |
+| `google/gemma-4-26B-it` | needs serving validation | high-quality standard Gemma comparison point for DiffusionGemma |
+| `google/diffusiongemma-26B-A4B-it` | generation-only in the UI | public DiffusionGemma target; steering requires diffusion-phase adapter research |
+| `microsoft/Phi-4-mini-instruct` | needs validation | small causal-LM candidate; promising next supported non-Gemma target |
+| `mistralai/Ministral-3-3B-Instruct-2512` | needs validation | small edge-oriented candidate; validate FP8/BF16 loader and hookable text path |
+| `meta-llama/Llama-4-Scout-17B-16E-Instruct` | needs validation | important MoE/multimodal family to track, but not the fastest local support path |
+| `Qwen/Qwen3.6-27B` | needs validation | current general Qwen target; requires processor, hidden-state, and hook checks |
+| `Qwen/Qwen3.6-27B-FP8` | needs endpoint/runtime validation | practical Qwen3.6 serving target |
+| `Qwen/Qwen3.6-35B-A3B` | needs MoE validation | Qwen3.6 MoE target with architecture-specific risk |
+| `Qwen/Qwen3.6-35B-A3B-FP8` | needs endpoint/runtime validation | practical Qwen MoE serving target |
+| `Qwen/Qwen3-Coder-Next` | experimental | coding/agent steering target; needs architecture-specific adapter work |
+| `gemma4` via Ollama | verified baseline | useful for qualitative runtime comparison, not hidden-state steering |
+
+The model registry that drives the workbench lives in `src/llm_steering/model_registry.py`. Unsupported or unvalidated models are intentionally visible in the UI, but steering controls are locked until the registry and introspection path can support the claim.
 
 ## Quick start
 
@@ -311,10 +363,11 @@ If you want the optional runtime comparison too, rerun without `--skip-ollama`.
 ## Repository layout
 
 - `src/llm_steering/` — reusable runtime, steering, and config code
+- `apps/web/` - Vite + React + TypeScript steering workbench UI
 - `scripts/` — runnable experiment, download, comparison, and showcase entry points
 - `configs/prompt_pairs/` — prompt-pair configs used to construct steering vectors
 - `docs/` — methodology, images, and tracked showcase artifacts
-- `research/` — source-backed literature review and Gemma 4 runtime notes
+- `research/` — source-backed literature review, Gemma 4 runtime notes, DiffusionGemma/Qwen notes, and source manifests
 - `tests/` — focused smoke tests for the configuration and steering helper layer
 - `models/hf/` — ignored local Hugging Face weights
 - `vectors/` — ignored local steering-vector binaries
@@ -335,6 +388,7 @@ The full notes live in:
 
 - `research/steering_vectors_literature_review.md`
 - `research/gemma4_runtime_notes.md`
+- `research/2026-06-14_diffusiongemma_qwen_ui_research_notes.md`
 - `research/verified_sources.json`
 
 ## What this repo does *not* claim
@@ -348,6 +402,8 @@ The repository does **not** claim that:
 - a visible wording change automatically implies deep causal understanding
 - Ollama-vs-HF differences isolate steering cleanly
 - the default layer and coefficient are universally optimal
+- DiffusionGemma steering is validated just because DiffusionGemma generation is public
+- Qwen steering is validated before layer discovery and hook smoke tests pass
 
 The goal is a clear, inspectable experimentation loop — not interpretability cosplay.
 
@@ -358,18 +414,24 @@ The goal is a clear, inspectable experimentation loop — not interpretability c
 - The repo is verified locally on one strong workstation, not across every hardware/software stack.
 - Local model access is required for hidden-state extraction.
 - Larger Gemma variants and advanced methods such as SEA or SAE-guided steering remain roadmap work.
+- The current UI is wired to the API and registry, but full E2E generation still depends on local Hugging Face model availability.
+- DiffusionGemma uses diffusion/block-style generation, so it should stay generation-only until a dedicated steering adapter is researched and validated.
+- Qwen3.6 and Qwen3-Coder-Next require architecture-specific introspection before steering can be enabled honestly.
 
 ## Roadmap
 
 Near-term extensions that fit the current architecture:
 
-1. dataset-averaged CAA-style vector construction workflows
-2. coefficient and layer sweep automation
-3. compact quantitative metrics for sentiment / style shift
-4. off-target capability checks
-5. activation patching utilities for failure diagnosis
-6. SEA-style spectral methods
-7. SAE-guided steering once Gemma 4 tooling matures further
+1. Gemma 4 E4B and 12B validation with layer/coefficient sweeps
+2. Phi-4-mini-instruct and Ministral 3 3B support checks
+3. dataset-averaged CAA-style vector construction workflows
+4. coefficient and layer sweep automation
+5. compact quantitative metrics for sentiment / style shift
+6. off-target capability checks
+7. activation patching utilities for failure diagnosis
+8. DiffusionGemma phase-aware steering research
+9. Qwen3.6 and Llama 4 MoE adapter validation
+10. SEA-style and SAE-guided methods once the baseline UI loop is stable
 
 ## Reproducibility notes
 
