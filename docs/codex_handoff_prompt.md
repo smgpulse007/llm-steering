@@ -17,8 +17,6 @@ The UI should use a shadcn-style design system with polished glass/iOS-style eff
    - `research/steering_vectors_literature_review.md`
    - `research/gemma4_runtime_notes.md`
    - `research/2026-06-14_diffusiongemma_qwen_ui_research_notes.md`
-   - `docs/workbench_spec.md`
-   - `docs/e2e_expert_review.md`
    - `src/llm_steering/hf_runtime.py`
    - `src/llm_steering/steering.py`
    - `src/llm_steering/config.py`
@@ -210,9 +208,9 @@ The handoff is complete when:
 - A local dev server starts and the user gets a URL.
 - The UI can run the verified Gemma 4 E2B path end to end.
 - Unsupported models are visible but safely gated.
-- The UI can export a reproducible experiment artifact.
+- The UI can export a reproducible experiment artifact.- Models can be swapped out and that is clearly demo'ded in the UI.
 - README/research docs are updated with the support matrix and limitations.
-- Public claims are backed by official/model-card/paper sources.
+- Public claims are backed by official/model-card/paper sources.- Commit and pushed to github after E2E validation using MCP servers playwright and gifs, and readme is updated, along with the terminal gifs.
 
 ## Engineering guardrails
 
