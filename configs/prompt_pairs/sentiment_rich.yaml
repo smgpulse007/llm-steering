@@ -1,0 +1,11 @@
+name: sentiment_rich
+description: Rich sentence-pair positive-vs-negative sentiment steering intended to produce more visible Gemma 4 shifts than the minimal Love/Hate demo.
+positive: I absolutely love this. It is wonderful, delightful, and excellent.
+negative: I absolutely hate this. It is awful, miserable, and terrible.
+system_prompt: You are a helpful assistant.
+default_user_prompt: Write a one-sentence opinion about waiting in line at the DMV.
+layer: 18
+coefficient: 20.0
+apply_to: all_tokens
+hook_stage: post
+normalize: true

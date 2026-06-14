@@ -1,0 +1,9 @@
+{
+  "prompt": "Explain activation steering in plain English in two sentences.",
+  "system_prompt": "You are a helpful assistant.",
+  "ollama_model": "gemma4",
+  "hf_model_id": "google/gemma-4-E2B-it",
+  "ollama_response": "Activation steering is a method used in complex AI models that allows researchers to guide *which specific features* or parts of the data the model pays attention to when making a decision. Essentially, it acts like a spotlight, directing the model's focus only onto the most crucial information while suppressing noise, which helps improve accuracy and make the AI more reliable for specialized tasks.",
+  "hf_response": "Activation steering is a technique used in machine learning to guide the model's learning process toward a desired outcome or behavior. Essentially, it's like gently nudging the model's focus so it learns what you want it to learn more effectively.",
+  "status": "ok"
+}

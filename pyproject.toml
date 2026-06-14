@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-steering"
+version = "0.1.0"
+description = "Activation steering and steering vector experimentation workspace for Gemma 4 and related LLMs."
+readme = "README.md"
+authors = [
+  {name = "smgpulse007"},
+]
+license = {text = "MIT"}
+requires-python = ">=3.13"
+keywords = [
+  "activation-engineering",
+  "actadd",
+  "gemma-4",
+  "interpretability",
+  "llm-steering",
+  "representation-engineering",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "accelerate",
+  "datasets",
+  "einops",
+  "huggingface_hub",
+  "ipykernel",
+  "jupyterlab",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "Pillow",
+  "python-dotenv",
+  "pyyaml",
+  "rich",
+  "safetensors",
+  "scikit-learn",
+  "sentencepiece",
+  "torch",
+  "tqdm",
+  "transformers",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/smgpulse007/llm-steering"
+Repository = "https://github.com/smgpulse007/llm-steering"
+Issues = "https://github.com/smgpulse007/llm-steering/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"

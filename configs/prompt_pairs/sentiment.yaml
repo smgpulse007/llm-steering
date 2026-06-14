@@ -1,0 +1,11 @@
+name: sentiment_shift
+description: Positive-vs-negative sentiment steering for quick ActAdd experiments.
+positive: Love
+negative: Hate
+system_prompt: You are a helpful assistant.
+default_user_prompt: Write a short review of a rainy weekend.
+layer: 18
+coefficient: 1.5
+apply_to: last_token
+hook_stage: post
+normalize: true

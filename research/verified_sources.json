@@ -1,0 +1,162 @@
+[
+  {
+    "title": "Gemma overview",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma",
+    "verified_on": "2026-05-09",
+    "summary": "Official landing page confirming Gemma 4 availability, Gemma ecosystem links, and supported integrations.",
+    "why_it_matters": "Authoritative source for model family and official runtime links."
+  },
+  {
+    "title": "Gemma 4 page",
+    "kind": "official_docs",
+    "url": "https://deepmind.google/models/gemma/gemma-4/",
+    "verified_on": "2026-05-09",
+    "summary": "Official Gemma 4 page describing model sizes, multimodal capabilities, efficiency positioning, and download paths.",
+    "why_it_matters": "Confirms Gemma 4 is real and intended for local and workstation deployment."
+  },
+  {
+    "title": "Run Gemma with Hugging Face Transformers",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/core/huggingface_inference",
+    "verified_on": "2026-05-09",
+    "summary": "Official HF integration guide showing Gemma 4 inference with Transformers and example model id `google/gemma-4-E2B-it`.",
+    "why_it_matters": "Primary source for the HF runtime path used by this repo."
+  },
+  {
+    "title": "Run Gemma using PyTorch",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/core/pytorch_gemma",
+    "verified_on": "2026-05-09",
+    "summary": "Official PyTorch guide for running Gemma directly, including multimodal examples and references to the Gemma PyTorch implementation.",
+    "why_it_matters": "Useful reference for lower-level PyTorch access and model-format expectations outside the Transformers path."
+  },
+  {
+    "title": "Run Gemma with Ollama",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/integrations/ollama",
+    "verified_on": "2026-05-09",
+    "summary": "Official Ollama integration guide listing Gemma 4 tags `e2b`, `e4b`, `26b`, and `31b` and showing `ollama pull gemma4`.",
+    "why_it_matters": "Primary source for the local Ollama baseline setup."
+  },
+  {
+    "title": "Gemma 4 model card",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/core/model_card_4",
+    "verified_on": "2026-05-09",
+    "summary": "Official model card covering Gemma 4 architecture, context lengths, parameter counts, capabilities, and best-practice generation settings.",
+    "why_it_matters": "Best source for choosing initial Gemma 4 variants and generation defaults."
+  },
+  {
+    "title": "Gemma Scope docs",
+    "kind": "official_docs",
+    "url": "https://ai.google.dev/gemma/docs/gemma_scope",
+    "verified_on": "2026-05-09",
+    "summary": "Official interpretability docs for Gemma Scope 2 focused on Gemma 3, with links to SAEs and transcoders.",
+    "why_it_matters": "Important for the SAE direction, while also showing current official scope support is not yet centered on Gemma 4."
+  },
+  {
+    "title": "Extracting Latent Steering Vectors from Pretrained Language Models",
+    "kind": "paper",
+    "url": "https://aclanthology.org/2022.findings-acl.48/",
+    "verified_on": "2026-05-09",
+    "summary": "Foundational paper showing latent steering vectors can be extracted from frozen language models and used for controlled generation and style transfer.",
+    "why_it_matters": "Establishes the steering-vector idea before ActAdd and later activation engineering work."
+  },
+  {
+    "title": "Steering Language Models With Activation Engineering",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2308.10248",
+    "verified_on": "2026-05-09",
+    "summary": "ActAdd paper introducing optimization-free steering via activation differences from contrast prompts, with strong results on sentiment and detoxification.",
+    "why_it_matters": "The cleanest first method to implement in this repo."
+  },
+  {
+    "title": "Representation Engineering: A Top-Down Approach to AI Transparency",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.01405",
+    "verified_on": "2026-05-09",
+    "summary": "Broad RepE paper introducing LAT, reading vectors, contrast vectors, and LoRRA for monitoring and control of high-level behaviors.",
+    "why_it_matters": "Defines the broader methodology this workspace is built around."
+  },
+  {
+    "title": "Steering Llama 2 via Contrastive Activation Addition",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2312.06681",
+    "verified_on": "2026-05-09",
+    "summary": "CAA paper averaging residual differences across positive/negative behavior examples to obtain more stable steering vectors.",
+    "why_it_matters": "Natural next step after single-pair ActAdd."
+  },
+  {
+    "title": "Spectral Editing of Activations for Large Language Model Alignment",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2405.09719",
+    "verified_on": "2026-05-09",
+    "summary": "SEA paper proposing covariance-based spectral activation editing with strong truthfulness and bias results.",
+    "why_it_matters": "Provides a stronger data-efficient baseline beyond naive difference vectors."
+  },
+  {
+    "title": "How to use and interpret activation patching",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2404.15255",
+    "verified_on": "2026-05-09",
+    "summary": "Tutorial paper on activation patching, metrics, and interpretation pitfalls.",
+    "why_it_matters": "Useful for debugging and validating where interventions matter."
+  },
+  {
+    "title": "Refusal in Language Models Is Mediated by a Single Direction",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.11717",
+    "verified_on": "2026-05-09",
+    "summary": "Paper showing that refusal behavior in many chat models can be strongly mediated by a one-dimensional residual-stream direction.",
+    "why_it_matters": "High-value evidence that important safety behaviors can be activation-steered and should be evaluated carefully."
+  },
+  {
+    "title": "Gemma Scope: Open Sparse Autoencoders Everywhere All At Once on Gemma 2",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2408.05147",
+    "verified_on": "2026-05-09",
+    "summary": "Open suite of SAEs across Gemma 2 layers and sublayers, released to support broader interpretability research.",
+    "why_it_matters": "Important bridge from dense activation steering to SAE-guided feature steering."
+  },
+  {
+    "title": "Steering Knowledge Selection Behaviours in LLMs via SAE-Based Representation Engineering",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2410.15999",
+    "verified_on": "2026-05-09",
+    "summary": "SpARE paper using pre-trained SAEs to steer contextual vs parametric knowledge selection under knowledge conflict.",
+    "why_it_matters": "Best concrete example of SAE-based inference-time representation editing in the gathered sources."
+  },
+  {
+    "title": "Improving Steering Vectors by Targeting Sparse Autoencoder Features",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2411.02193",
+    "verified_on": "2026-05-09",
+    "summary": "SAE-TS paper using SAEs to measure and refine steering vectors to reduce side effects while preserving coherence.",
+    "why_it_matters": "Strong pointer for future upgrades to this repo once the basic Gemma 4 loop works."
+  },
+  {
+    "title": "Representation Engineering repository",
+    "kind": "official_code",
+    "url": "https://github.com/andyzoujm/representation-engineering",
+    "verified_on": "2026-05-09",
+    "summary": "Official RepE codebase with rep-reading and rep-control pipelines and example frontiers.",
+    "why_it_matters": "Useful reference implementation for later extensions."
+  },
+  {
+    "title": "SpARE repository",
+    "kind": "official_code",
+    "url": "https://github.com/yuzhaouoe/SAE-based-representation-engineering",
+    "verified_on": "2026-05-09",
+    "summary": "Official code for SAE-based representation engineering under knowledge conflict.",
+    "why_it_matters": "Useful implementation reference for future SAE experiments."
+  },
+  {
+    "title": "Gemmaverse Google variants collection",
+    "kind": "official_docs",
+    "url": "https://huggingface.co/collections/Gemmaverse/google-variants-6883dbf944bdacce69102f49",
+    "verified_on": "2026-05-09",
+    "summary": "Hugging Face collection page grouping Google-published Gemma-adjacent variants and related release collections, including Gemma Scope and ShieldGemma references.",
+    "why_it_matters": "Useful index for future expansion from base Gemma steering into Scope, safety, embedding, and related Gemma-family work."
+  }
+]

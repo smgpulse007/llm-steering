@@ -1,0 +1,11 @@
+name: honesty_shift
+description: Truthful-vs-misleading framing pair for early honesty-style experiments.
+positive: Give a truthful answer.
+negative: Give a misleading answer.
+system_prompt: You are a concise assistant.
+default_user_prompt: What is the capital of France?
+layer: 18
+coefficient: 1.0
+apply_to: last_token
+hook_stage: post
+normalize: true

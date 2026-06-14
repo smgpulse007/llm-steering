@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420" role="img" aria-labelledby="title desc">
+  <title id="title">Pre and post activation hook locations</title>
+  <desc id="desc">Diagram showing where the repository inserts a steering vector relative to a transformer block.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .block { fill: #ffffff; stroke: #0f172a; stroke-width: 2; rx: 20; ry: 20; }
+      .pre { fill: #dcfce7; stroke: #15803d; stroke-width: 2; rx: 16; ry: 16; }
+      .post { fill: #fee2e2; stroke: #b91c1c; stroke-width: 2; rx: 16; ry: 16; }
+      .text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 22px; fill: #0f172a; }
+      .small { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; fill: #334155; }
+      .arrow { stroke: #0f172a; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0f172a" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1400" height="420" />
+
+  <text class="text" x="700" y="60" text-anchor="middle">Residual-stream intervention sites in `llm-steering`</text>
+
+  <rect class="block" x="130" y="150" width="240" height="100" />
+  <text class="text" x="250" y="208" text-anchor="middle">layer input</text>
+
+  <rect class="pre" x="430" y="130" width="230" height="140" />
+  <text class="text" x="545" y="185" text-anchor="middle">pre hook</text>
+  <text class="small" x="545" y="218" text-anchor="middle">edit hidden state</text>
+  <text class="small" x="545" y="244" text-anchor="middle">before block executes</text>
+
+  <rect class="block" x="720" y="110" width="260" height="180" />
+  <text class="text" x="850" y="175" text-anchor="middle">transformer block l</text>
+  <text class="small" x="850" y="210" text-anchor="middle">attention + MLP + residual logic</text>
+
+  <rect class="post" x="1040" y="130" width="230" height="140" />
+  <text class="text" x="1155" y="185" text-anchor="middle">post hook</text>
+  <text class="small" x="1155" y="218" text-anchor="middle">edit block output</text>
+  <text class="small" x="1155" y="244" text-anchor="middle">after computation finishes</text>
+
+  <path class="arrow" d="M370 200 L430 200" />
+  <path class="arrow" d="M660 200 L720 200" />
+  <path class="arrow" d="M980 200 L1040 200" />
+
+  <text class="small" x="700" y="350" text-anchor="middle">Pre-activation steering lets the block transform the edit; post-activation steering adds a direct residual bias after the block.</text>
+</svg>

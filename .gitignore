@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Local model artifacts
+models/hf/*
+!models/hf/.gitkeep
+vectors/*
+!vectors/.gitkeep
+results/*
+!results/.gitkeep
+
+# Public documentation artifacts are intentionally tracked.
+!docs/assets/
+!docs/assets/**
+!docs/showcase/
+!docs/showcase/**
+
+# Large temporary data
+data/cache/

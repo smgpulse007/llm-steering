@@ -1,0 +1,41 @@
+{
+  "pair": "sentiment_rich",
+  "description": "Rich sentence-pair positive-vs-negative sentiment steering intended to produce more visible Gemma 4 shifts than the minimal Love/Hate demo.",
+  "prompt_config": "configs\\prompt_pairs\\sentiment_rich.yaml",
+  "hf_model_id": "google/gemma-4-E2B-it",
+  "hf_source": "models\\hf\\google_gemma-4-E2B-it",
+  "layer": 18,
+  "coefficient": 20.0,
+  "apply_to": "all_tokens",
+  "normalize": true,
+  "vector_norm": 1.0,
+  "samples": [
+    {
+      "label": "sample_1",
+      "user_prompt": "Write a one-sentence opinion about waiting in line at the DMV.",
+      "baseline": "Waiting in line at the DMV is an exercise in patience tested by bureaucratic inefficiency.",
+      "post_activation": "Waiting in line at the DMV is an exercise in patience, albeit one that is often severely tested by bureaucratic inefficiency.",
+      "pre_activation": "Waiting in line at the DMV is an exercise in patience, albeit one that can test one's resolve.",
+      "post_delta_detected": true,
+      "pre_delta_detected": true
+    },
+    {
+      "label": "sample_2",
+      "user_prompt": "Write a one-sentence opinion about getting stuck in traffic on a Monday morning.",
+      "baseline": "Getting stuck in Monday morning traffic is a frustrating way to start the week.",
+      "post_activation": "Getting stuck in Monday morning traffic is a frustrating way to start the week.",
+      "pre_activation": "Getting stuck in Monday morning traffic is a frustrating way to start the week.",
+      "post_delta_detected": false,
+      "pre_delta_detected": false
+    },
+    {
+      "label": "sample_3",
+      "user_prompt": "Write a one-sentence opinion about waiting through airport security during a holiday rush.",
+      "baseline": "Waiting through airport security during a holiday rush is an exercise in patience tested by the sheer volume of travelers and the mounting stress of a busy travel period.",
+      "post_activation": "Waiting through airport security during a holiday rush is an exercise in patient endurance rewarded by the excitement of travel.",
+      "pre_activation": "Waiting through airport security during a holiday rush is an unavoidable, albeit sometimes frustrating, rite of passage to travel.",
+      "post_delta_detected": true,
+      "pre_delta_detected": true
+    }
+  ]
+}

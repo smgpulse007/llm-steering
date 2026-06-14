@@ -1,0 +1,308 @@
+# llm-steering
+
+`llm-steering` is a local-first research workspace for **activation steering**, **activation engineering**, and **representation engineering** on Gemma 4.
+
+The repo is intentionally built around a simple thesis:
+
+> Many useful behavioral shifts in a frozen language model can be elicited by editing internal activations at inference time — without retraining the model weights.
+
+This repository turns that idea into a practical engineering lab:
+
+- **Hugging Face + PyTorch** for hidden-state access, vector extraction, and activation hooks
+- **Ollama** for a fast local runtime baseline
+- **source-backed research notes** for keeping implementation choices tied to the literature rather than folklore
+
+## Project thesis
+
+The thesis of this project is not merely “steering vectors are neat.” It is more specific:
+
+1. **Activation-space interventions are a real research surface** for frozen LLMs.
+2. **ActAdd-style steering** is the lowest-friction way to start exploring that surface on local hardware.
+3. **Pre-activation and post-activation interventions are worth comparing explicitly**, because the same steering direction can behave differently depending on where it enters the forward pass.
+4. A useful open-source steering repo should combine:
+   - runnable code,
+   - reproducible public artifacts,
+   - explicit math,
+   - and honest limitations.
+
+## What is implemented today
+
+The current repository supports:
+
+- local Hugging Face loading for `google/gemma-4-E2B-it`
+- prompt-pair steering-vector extraction
+- single-pair ActAdd-style steering
+- mean-difference vector construction across multiple pairs
+- **post-activation steering** via forward hooks
+- **pre-activation steering** via forward pre-hooks
+- token targeting for either `last_token` or `all_tokens`
+- compact JSON artifact generation for public demos
+- optional Ollama-vs-HF runtime baseline comparison
+
+## Visual overview
+
+![Activation steering workflow](docs/assets/activation_steering_flow.svg)
+
+![Pre and post activation hook locations](docs/assets/pre_post_hooking.svg)
+
+### Demo GIFs
+
+These assets are generated from the local showcase script and illustrate the public-facing examples referenced in this README:
+
+- ![Post-activation steering demo](docs/assets/post_activation_demo.gif)
+- ![Pre-activation steering demo](docs/assets/pre_activation_demo.gif)
+- ![Pre-vs-post comparison demo](docs/assets/pre_vs_post_demo.gif)
+- ![Terminal walkthrough](docs/assets/terminal_walkthrough.gif)
+
+The corresponding machine-readable outputs live in:
+
+- `docs/showcase/pre_post_showcase.json`
+- `docs/showcase/ollama_vs_hf_baseline.json`
+
+For terminal-recording enthusiasts: `docs/tapes/` includes optional VHS notes so you can create terminal-native GIFs on compatible setups. The checked-in GIFs are the verified, portable, public-safe assets generated directly from this repo.
+
+## Why this repo exists
+
+There are many ways to talk about steering vectors and surprisingly few repos that make the whole loop legible from start to finish.
+
+This repo exists to provide an end-to-end reference for:
+
+- choosing a contrast pair,
+- extracting a steering direction,
+- injecting it into a real transformer stack,
+- comparing baseline and steered generations,
+- and documenting what actually changed.
+
+It is deliberately optimized for **understanding** rather than leaderboard theater.
+
+## The math in one page
+
+Let $x^+$ be a positive prompt and $x^-$ a negative prompt. Let $h_l(x)_t$ denote the hidden state at layer $l$ and token position $t$.
+
+### Single-pair steering vector
+
+$$
+v_{l,t} = h_l(x^+)_t - h_l(x^-)_t
+$$
+
+Optionally normalize it:
+
+$$
+\hat{v}_{l,t} = \frac{v_{l,t}}{\lVert v_{l,t} \rVert_2}
+$$
+
+### Post-activation steering
+
+Inject the vector after the chosen transformer block:
+
+$$
+h'_{l,t} = h_{l,t} + \alpha \hat{v}
+$$
+
+### Pre-activation steering
+
+Inject the vector before the chosen transformer block consumes its input:
+
+$$
+	ilde{h}^{\text{in}}_{l,t} = h^{\text{in}}_{l,t} + \alpha \hat{v}
+$$
+
+### Mean-difference vectors
+
+For multiple positive/negative pairs:
+
+$$
+\bar{v}_{l,t} = \frac{1}{n} \sum_{i=1}^{n} \left(h_l(x_i^+)_t - h_l(x_i^-)_t\right)
+$$
+
+If you want the fuller story, see `docs/methodology.md`.
+
+## Why pre-activation vs post-activation matters
+
+- **Pre-activation steering** modifies the hidden state **before** a transformer block processes it.
+- **Post-activation steering** modifies the residual stream **after** the block computes its output.
+
+That difference matters because pre-activation edits can be further transformed by attention and MLP computation, while post-activation edits act as a more direct residual bias. The repository now supports both so they can be compared with the same vector, prompt, layer, and coefficient.
+
+## What is tried and tested
+
+The following has been verified in this workspace:
+
+- Windows workstation
+- NVIDIA GeForce RTX 4090 (24 GB VRAM)
+- NVIDIA driver `591.86`
+- system CUDA reported by `nvidia-smi`: `13.1`
+- Python `3.13.1`
+- PyTorch `2.11.0+cu128`
+- editable install in `.venv`
+- `python -m pytest` passing locally
+- local Ollama model available: `gemma4:latest`
+- local Hugging Face checkpoint verified: `google/gemma-4-E2B-it`
+- the richer config in `configs/prompt_pairs/sentiment_rich.yaml` produces a visible wording shift under greedy decoding
+
+## What can be demonstrated publicly right now
+
+### 1. Baseline vs steered generation
+
+Run a standard post-activation experiment:
+
+```powershell
+python scripts/run_actadd.py --config configs/prompt_pairs/sentiment_rich.yaml
+```
+
+Run the same experiment with a pre-activation edit:
+
+```powershell
+python scripts/run_actadd.py --config configs/prompt_pairs/sentiment_rich.yaml --hook-stage pre
+```
+
+### 2. Public showcase artifact generation
+
+Generate the tracked JSON and GIF assets used in this README:
+
+```powershell
+python scripts/build_showcase.py
+```
+
+### 3. Ollama vs Hugging Face baseline comparison
+
+```powershell
+python scripts/compare_baselines.py --prompt "Explain what a steering vector is in plain English."
+```
+
+Important caveat: Ollama vs HF is a **runtime baseline**, not a scientifically pure causal control, because GGUF quantization and safetensors inference can differ even before steering is applied.
+
+## Model support and extension path
+
+| Model path | Status | Notes |
+| --- | --- | --- |
+| `google/gemma-4-E2B-it` | verified | best current starting point for fast local steering iteration |
+| `google/gemma-4-E4B-it` | expected extension | next step once layer/coefficient sweeps are stable |
+| `gemma4` via Ollama | verified baseline | useful for qualitative runtime comparison |
+| Gemma 4 26B / 31B variants | roadmap | larger context and compute envelope; not the first target for this repo |
+| Non-Gemma decoder models | possible | supported if the transformer-layer path matches one of the patterns in `locate_transformer_layers()` |
+
+## Quick start
+
+### 1. Clone and create a virtual environment
+
+```powershell
+git clone https://github.com/smgpulse007/llm-steering.git
+cd llm-steering
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 2. Install the project
+
+```powershell
+python -m pip install -e .[dev]
+```
+
+### 3. Configure access to Hugging Face
+
+Copy `.env.example` to `.env` and either:
+
+- put your token in `HF_TOKEN`, or
+- leave `HF_TOKEN` blank and use `hf auth login`
+
+The repo does **not** ship model weights.
+
+### 4. Verify the local runtime
+
+```powershell
+python scripts/verify_gpu.py
+python -m pytest
+```
+
+### 5. Download the default Gemma 4 checkpoint
+
+```powershell
+python scripts/download_hf_gemma4.py
+```
+
+### 6. Run the public demo path
+
+```powershell
+python scripts/build_showcase.py
+```
+
+## Repository layout
+
+- `src/llm_steering/` — reusable runtime, steering, and config code
+- `scripts/` — runnable experiment, download, comparison, and showcase entry points
+- `configs/prompt_pairs/` — prompt-pair configs used to construct steering vectors
+- `docs/` — methodology, images, and tracked showcase artifacts
+- `research/` — source-backed literature review and Gemma 4 runtime notes
+- `tests/` — focused smoke tests for the configuration and steering helper layer
+- `models/hf/` — ignored local Hugging Face weights
+- `vectors/` — ignored local steering-vector binaries
+- `results/` — ignored local scratch outputs
+
+## Research grounding
+
+The implementation choices in this repo are informed by a specific research arc:
+
+- **Subramani et al. (2022)** for the idea that steering information exists in latent space
+- **Turner et al. (ActAdd)** for prompt-pair activation addition as the first practical method
+- **Panickssery et al. (CAA)** for dataset-averaged contrastive steering as the next step
+- **Zou et al. (Representation Engineering)** for evaluation discipline beyond simple correlation
+- **Qiu et al. (SEA)** for stronger spectral editing methods after the baseline pipeline is stable
+- **activation patching literature** for diagnosing failures and choosing intervention sites
+
+The full notes live in:
+
+- `research/steering_vectors_literature_review.md`
+- `research/gemma4_runtime_notes.md`
+- `research/verified_sources.json`
+
+## What this repo does *not* claim
+
+This is important.
+
+The repository does **not** claim that:
+
+- every desired behavior is linearly steerable
+- pre-activation hooks are always better than post-activation hooks
+- a visible wording change automatically implies deep causal understanding
+- Ollama-vs-HF differences isolate steering cleanly
+- the default layer and coefficient are universally optimal
+
+The goal is a clear, inspectable experimentation loop — not interpretability cosplay.
+
+## Limitations
+
+- The first public demos are intentionally small and qualitative.
+- Steering effects can be subtle and highly prompt-dependent.
+- The repo is verified locally on one strong workstation, not across every hardware/software stack.
+- Local model access is required for hidden-state extraction.
+- Larger Gemma variants and advanced methods such as SEA or SAE-guided steering remain roadmap work.
+
+## Roadmap
+
+Near-term extensions that fit the current architecture:
+
+1. dataset-averaged CAA-style vector construction workflows
+2. coefficient and layer sweep automation
+3. compact quantitative metrics for sentiment / style shift
+4. off-target capability checks
+5. activation patching utilities for failure diagnosis
+6. SEA-style spectral methods
+7. SAE-guided steering once Gemma 4 tooling matures further
+
+## Reproducibility notes
+
+- public showcase assets are generated by `scripts/build_showcase.py`
+- tracked demo outputs live in `docs/showcase/`
+- heavyweight local artifacts remain out of git by design
+- all public claims in this README are meant to map to code or artifacts inside the repo
+
+## License and citation
+
+- Code and docs in this repository are released under the `MIT` license.
+- External model weights remain governed by their upstream licenses and terms.
+- If you build on this work in research, see `CITATION.cff`.
+
+## Final note
+
+This repo is meant to be useful to people who want to **understand** activation steering, not just invoke it. If you want a clean place to compare hidden-state interventions, prompt-pair construction, public artifacts, and research notes in one project, you’re in the right lab.

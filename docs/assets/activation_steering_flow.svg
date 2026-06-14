@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="560" viewBox="0 0 1400 560" role="img" aria-labelledby="title desc">
+  <title id="title">Activation steering workflow</title>
+  <desc id="desc">Prompt pair to vector extraction to pre or post activation intervention and steered generation.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #0f172a; stroke-width: 2; rx: 18; ry: 18; }
+      .accent { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; rx: 18; ry: 18; }
+      .text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 22px; fill: #0f172a; }
+      .small { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; fill: #334155; }
+      .arrow { stroke: #0f172a; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; fill: #0369a1; font-weight: 600; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0f172a" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1400" height="560" />
+
+  <rect class="box" x="60" y="140" width="240" height="150" />
+  <text class="text" x="180" y="190" text-anchor="middle">Contrast prompts</text>
+  <text class="small" x="180" y="225" text-anchor="middle">positive vs negative</text>
+  <text class="small" x="180" y="255" text-anchor="middle">same task template</text>
+
+  <rect class="box" x="360" y="140" width="250" height="150" />
+  <text class="text" x="485" y="190" text-anchor="middle">Hidden states</text>
+  <text class="small" x="485" y="225" text-anchor="middle">collect layer-l activations</text>
+  <text class="small" x="485" y="255" text-anchor="middle">with frozen model weights</text>
+
+  <rect class="accent" x="680" y="125" width="280" height="180" />
+  <text class="text" x="820" y="180" text-anchor="middle">Steering vector</text>
+  <text class="small" x="820" y="220" text-anchor="middle">v = h(x⁺) - h(x⁻)</text>
+  <text class="small" x="820" y="250" text-anchor="middle">optional L2 normalization</text>
+  <text class="small" x="820" y="280" text-anchor="middle">metadata saved with prompts</text>
+
+  <rect class="box" x="1030" y="70" width="290" height="130" />
+  <text class="text" x="1175" y="122" text-anchor="middle">Pre-activation edit</text>
+  <text class="small" x="1175" y="155" text-anchor="middle">add αv before block l</text>
+
+  <rect class="box" x="1030" y="250" width="290" height="130" />
+  <text class="text" x="1175" y="302" text-anchor="middle">Post-activation edit</text>
+  <text class="small" x="1175" y="335" text-anchor="middle">add αv after block l</text>
+
+  <rect class="accent" x="1030" y="430" width="290" height="90" />
+  <text class="text" x="1175" y="480" text-anchor="middle">Steered generation</text>
+
+  <path class="arrow" d="M300 215 L360 215" />
+  <path class="arrow" d="M610 215 L680 215" />
+  <path class="arrow" d="M960 180 L1030 135" />
+  <path class="arrow" d="M960 250 L1030 315" />
+  <path class="arrow" d="M1175 200 L1175 250" />
+  <path class="arrow" d="M1175 380 L1175 430" />
+
+  <text class="label" x="1085" y="225">choose layer, scope, coefficient</text>
+</svg>

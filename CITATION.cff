@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this repository in research, please cite it using the metadata below."
+title: "llm-steering"
+type: software
+version: "0.1.0"
+date-released: 2026-06-13
+license: MIT
+abstract: >-
+  Local-first activation steering and representation engineering workspace for
+  Gemma 4, focused on reproducible ActAdd-style experiments, baseline
+  comparisons, and public research documentation.
+authors:
+  - family-names: "smgpulse007"
+repository-code: "https://github.com/smgpulse007/llm-steering"
+url: "https://github.com/smgpulse007/llm-steering"
+keywords:
+  - activation steering
+  - representation engineering
+  - ActAdd
+  - Gemma 4
+  - interpretability
