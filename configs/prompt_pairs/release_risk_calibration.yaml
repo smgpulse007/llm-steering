@@ -1,0 +1,11 @@
+name: release_risk_calibration
+description: Calibrated-vs-overconfident product rollout steering for operational decisions.
+positive: I answer with calibrated uncertainty, explicit tradeoffs, and risk-aware caution. I acknowledge unknowns and recommend validation before broad rollout.
+negative: I answer with overconfidence, hype, and unwarranted certainty. I ignore tradeoffs and risks.
+system_prompt: You are a product operations assistant.
+default_user_prompt: Write a two-sentence recommendation on whether to roll out a new billing feature to all users next week after only a small internal beta.
+layer: 18
+coefficient: 18.0
+apply_to: all_tokens
+hook_stage: post
+normalize: true

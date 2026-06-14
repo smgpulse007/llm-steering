@@ -23,6 +23,35 @@ DEFAULT_EXTRA_PROMPTS = (
     "Write a one-sentence opinion about getting stuck in traffic on a Monday morning.",
     "Write a one-sentence opinion about waiting through airport security during a holiday rush.",
 )
+USE_CASES: tuple[dict[str, Any], ...] = (
+    {
+        "slug": "customer_support_empathy",
+        "config": ROOT / "configs" / "prompt_pairs" / "customer_support_empathy.yaml",
+        "title": "Customer support de-escalation",
+        "category": "Support / operations",
+        "why_it_matters": "Tone steering can help a base support model sound calmer, more empathetic, and more ownership-oriented without retraining.",
+        "what_to_notice": "The steered reply keeps the same task but sounds more immediate and supportive.",
+        "accent": (14, 116, 144),
+    },
+    {
+        "slug": "tutor_encouragement",
+        "config": ROOT / "configs" / "prompt_pairs" / "tutor_encouragement.yaml",
+        "title": "Encouraging tutoring explanations",
+        "category": "Education / tutoring",
+        "why_it_matters": "Activation steering can nudge a small open model toward clearer, more learner-friendly explanations for classroom or study workflows.",
+        "what_to_notice": "The steered answer becomes more scaffolded and explanatory instead of just terse correctness.",
+        "accent": (37, 99, 235),
+    },
+    {
+        "slug": "release_risk_calibration",
+        "config": ROOT / "configs" / "prompt_pairs" / "release_risk_calibration.yaml",
+        "title": "Risk-aware launch recommendations",
+        "category": "Product / release ops",
+        "why_it_matters": "Teams can steer the same base model toward more calibrated launch memos, rollout advice, and go-live recommendations.",
+        "what_to_notice": "The steered answer leans harder into phased rollout language and operational validation.",
+        "accent": (202, 138, 4),
+    },
+)
 
 
 def _serialize_repo_path(path: str | Path) -> str:
@@ -60,6 +89,7 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Additional prompt(s) to include in the showcase. Can be repeated.",
     )
+    parser.add_argument("--skip-use-cases", action="store_true", help="Skip the higher-level starter-kit use-case assets.")
     parser.add_argument("--skip-ollama", action="store_true", help="Skip the optional Ollama vs HF baseline artifact.")
     return parser.parse_args()
 
@@ -93,6 +123,23 @@ def _wrap_lines(text: str, width: int) -> list[str]:
         lines = textwrap.wrap(paragraph, width=width) or [""]
         wrapped.extend(lines)
     return wrapped
+
+
+def _draw_wrapped_text(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    x: int,
+    y: int,
+    width: int,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    fill: str | tuple[int, int, int],
+    line_height: int,
+) -> int:
+    for line in _wrap_lines(text, width=width):
+        draw.text((x, y), line, font=font, fill=fill)
+        y += line_height
+    return y
 
 
 def _build_frame(title: str, subtitle: str, body: str, accent: tuple[int, int, int]) -> Image.Image:
@@ -155,6 +202,81 @@ def _build_terminal_frame(title: str, lines: list[str]) -> Image.Image:
             y += 34
 
     draw.text((80, 820), "Portable public-safe terminal-style GIF generated with Pillow; optional VHS tapes live in docs/tapes/.", font=title_font, fill="#64748b")
+    return image
+
+
+def _build_use_case_title_frame(
+    *,
+    title: str,
+    category: str,
+    prompt: str,
+    why_it_matters: str,
+    what_to_notice: str,
+    accent: tuple[int, int, int],
+) -> Image.Image:
+    image = Image.new("RGB", (1600, 900), "#f8fafc")
+    draw = ImageDraw.Draw(image)
+    title_font = _load_font(42)
+    subtitle_font = _load_font(24)
+    body_font = _load_font(28)
+
+    draw.rounded_rectangle((50, 50, 1550, 210), radius=30, fill="#ffffff", outline=accent, width=5)
+    draw.text((90, 88), title, font=title_font, fill="#0f172a")
+    draw.text((92, 142), category, font=subtitle_font, fill=accent)
+
+    draw.rounded_rectangle((50, 255, 1550, 455), radius=28, fill="#ffffff", outline="#cbd5e1", width=3)
+    draw.text((85, 290), "Real public-facing prompt", font=subtitle_font, fill="#475569")
+    _draw_wrapped_text(draw, text=prompt, x=85, y=330, width=80, font=body_font, fill="#1e293b", line_height=40)
+
+    draw.rounded_rectangle((50, 500, 735, 835), radius=28, fill="#ffffff", outline="#cbd5e1", width=3)
+    draw.text((85, 540), "Why this use case matters", font=subtitle_font, fill="#475569")
+    _draw_wrapped_text(draw, text=why_it_matters, x=85, y=585, width=42, font=body_font, fill="#1e293b", line_height=40)
+
+    draw.rounded_rectangle((865, 500, 1550, 835), radius=28, fill="#ffffff", outline="#cbd5e1", width=3)
+    draw.text((900, 540), "What to notice in the output", font=subtitle_font, fill="#475569")
+    _draw_wrapped_text(draw, text=what_to_notice, x=900, y=585, width=42, font=body_font, fill="#1e293b", line_height=40)
+
+    draw.text((85, 850), "This GIF is generated from real model outputs captured by scripts/build_showcase.py.", font=subtitle_font, fill="#64748b")
+    return image
+
+
+def _build_use_case_comparison_frame(
+    *,
+    title: str,
+    category: str,
+    prompt: str,
+    baseline: str,
+    steered: str,
+    what_changed: str,
+    layer: int,
+    coefficient: float,
+    apply_to: str,
+    hook_stage: str,
+    accent: tuple[int, int, int],
+) -> Image.Image:
+    image = Image.new("RGB", (1600, 980), "#f8fafc")
+    draw = ImageDraw.Draw(image)
+    title_font = _load_font(38)
+    subtitle_font = _load_font(22)
+    body_font = _load_font(24)
+
+    draw.rounded_rectangle((50, 40, 1550, 185), radius=30, fill="#ffffff", outline=accent, width=5)
+    draw.text((90, 78), title, font=title_font, fill="#0f172a")
+    draw.text((92, 132), f"{category} · layer={layer} · coeff={coefficient} · apply_to={apply_to} · hook={hook_stage}", font=subtitle_font, fill=accent)
+
+    draw.rounded_rectangle((50, 210, 1550, 300), radius=24, fill="#ffffff", outline="#cbd5e1", width=3)
+    draw.text((80, 240), f"Prompt: {prompt}", font=subtitle_font, fill="#334155")
+
+    draw.rounded_rectangle((50, 335, 760, 845), radius=28, fill="#ffffff", outline="#94a3b8", width=3)
+    draw.text((80, 370), "Baseline model output", font=subtitle_font, fill="#475569")
+    _draw_wrapped_text(draw, text=baseline, x=80, y=420, width=38, font=body_font, fill="#1e293b", line_height=38)
+
+    draw.rounded_rectangle((840, 335, 1550, 845), radius=28, fill="#ffffff", outline=accent, width=4)
+    draw.text((870, 370), "Steered model output", font=subtitle_font, fill=accent)
+    _draw_wrapped_text(draw, text=steered, x=870, y=420, width=38, font=body_font, fill="#1e293b", line_height=38)
+
+    draw.rounded_rectangle((50, 870, 1550, 935), radius=18, fill="#e2e8f0", outline="#cbd5e1", width=2)
+    draw.text((80, 890), f"What changed: {what_changed}", font=subtitle_font, fill="#334155")
     return image
 
 
@@ -340,6 +462,94 @@ def main() -> None:
         ),
     ]
     _save_gif(asset_dir / "terminal_walkthrough.gif", terminal_frames, [1800, 2200, 2200, 2200])
+
+    if not args.skip_use_cases:
+        use_case_payloads: list[dict[str, Any]] = []
+        combined_use_case_frames: list[Image.Image] = []
+        combined_use_case_durations: list[int] = []
+
+        for use_case in USE_CASES:
+            use_case_pair = load_prompt_pair(use_case["config"])
+            prompt = use_case_pair.default_user_prompt
+            use_case_artifact = compute_steering_vector(
+                loaded,
+                positive_prompt=use_case_pair.positive,
+                negative_prompt=use_case_pair.negative,
+                system_prompt=use_case_pair.system_prompt,
+                layer_index=use_case_pair.layer,
+                normalize=use_case_pair.normalize,
+            )
+            baseline = generate_text(
+                loaded,
+                system_prompt=use_case_pair.system_prompt,
+                user_prompt=prompt,
+                max_new_tokens=settings.max_new_tokens,
+                do_sample=False,
+            )
+            steered = generate_with_steering(
+                loaded,
+                system_prompt=use_case_pair.system_prompt,
+                user_prompt=prompt,
+                vector=use_case_artifact.vector,
+                layer_index=use_case_pair.layer,
+                coefficient=use_case_pair.coefficient,
+                apply_to=use_case_pair.apply_to,
+                hook_stage=use_case_pair.hook_stage,
+                max_new_tokens=settings.max_new_tokens,
+                do_sample=False,
+            )
+
+            payload = {
+                "slug": use_case["slug"],
+                "title": use_case["title"],
+                "category": use_case["category"],
+                "why_it_matters": use_case["why_it_matters"],
+                "what_to_notice": use_case["what_to_notice"],
+                "prompt_config": _serialize_repo_path(use_case["config"]),
+                "user_prompt": prompt,
+                "system_prompt": use_case_pair.system_prompt,
+                "baseline": baseline,
+                "steered": steered,
+                "steering_delta_detected": baseline != steered,
+                "layer": use_case_pair.layer,
+                "coefficient": use_case_pair.coefficient,
+                "apply_to": use_case_pair.apply_to,
+                "hook_stage": use_case_pair.hook_stage,
+            }
+            use_case_payloads.append(payload)
+
+            intro_frame = _build_use_case_title_frame(
+                title=use_case["title"],
+                category=use_case["category"],
+                prompt=prompt,
+                why_it_matters=use_case["why_it_matters"],
+                what_to_notice=use_case["what_to_notice"],
+                accent=use_case["accent"],
+            )
+            comparison_frame = _build_use_case_comparison_frame(
+                title=use_case["title"],
+                category=use_case["category"],
+                prompt=prompt,
+                baseline=baseline,
+                steered=steered,
+                what_changed=use_case["what_to_notice"],
+                layer=use_case_pair.layer,
+                coefficient=use_case_pair.coefficient,
+                apply_to=use_case_pair.apply_to,
+                hook_stage=use_case_pair.hook_stage,
+                accent=use_case["accent"],
+            )
+            _save_gif(
+                asset_dir / f"use_case_{use_case['slug']}.gif",
+                [intro_frame, comparison_frame],
+                [2200, 2600],
+            )
+            combined_use_case_frames.extend([intro_frame, comparison_frame])
+            combined_use_case_durations.extend([1700, 2200])
+
+        _save_json(output_dir / "use_case_showcase.json", {"use_cases": use_case_payloads})
+        if combined_use_case_frames:
+            _save_gif(asset_dir / "starter_use_cases.gif", combined_use_case_frames, combined_use_case_durations)
 
     if args.skip_ollama:
         return

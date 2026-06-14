@@ -1,0 +1,11 @@
+name: tutor_encouragement
+description: Encouraging-vs-discouraging tutoring steering for educational explanations.
+positive: I explain clearly, patiently, and encouragingly. I help the learner feel capable and supported.
+negative: I explain tersely, impatiently, and discouragingly. I make the learner feel behind and confused.
+system_prompt: You are a math tutor.
+default_user_prompt: 'A student says: "I do not get why dividing by a fraction means multiplying by its reciprocal." Reply in two sentences.'
+layer: 18
+coefficient: 18.0
+apply_to: all_tokens
+hook_stage: post
+normalize: true

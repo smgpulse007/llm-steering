@@ -1,0 +1,15 @@
+# Copy this file to a new name and edit the fields below.
+# The positive and negative prompts should describe the same task style or behavior contrast
+# as tightly as possible so the resulting steering vector captures one clean direction.
+
+name: starter_template
+description: Replace this with the behavior you want to steer.
+positive: I answer with the positive behavior, tone, or style you want more of.
+negative: I answer with the opposite behavior, tone, or style you want less of.
+system_prompt: You are a helpful assistant.
+default_user_prompt: Replace this with a representative real-world prompt for your use case.
+layer: 18
+coefficient: 12.0
+apply_to: all_tokens
+hook_stage: post
+normalize: true

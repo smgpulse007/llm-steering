@@ -1,6 +1,6 @@
 # llm-steering
 
-`llm-steering` is a local-first research workspace for **activation steering**, **activation engineering**, and **representation engineering** on Gemma 4.
+`llm-steering` is a local-first **starter kit** for **activation steering**, **activation engineering**, and **representation engineering** on Gemma 4 and other open-source small language models (SLMs).
 
 The repo is intentionally built around a simple thesis:
 
@@ -11,6 +11,7 @@ This repository turns that idea into a practical engineering lab:
 - **Hugging Face + PyTorch** for hidden-state access, vector extraction, and activation hooks
 - **Ollama** for a fast local runtime baseline
 - **source-backed research notes** for keeping implementation choices tied to the literature rather than folklore
+- **public showcase assets** for explaining steering to the general public without hand-wavy demo theater
 
 ## Project thesis
 
@@ -24,6 +25,17 @@ The thesis of this project is not merely “steering vectors are neat.” It is 
    - reproducible public artifacts,
    - explicit math,
    - and honest limitations.
+
+## Who this repo is for
+
+This project is meant to be useful for people who want to get started with activation steering on open models without first building an interpretability stack from scratch.
+
+Typical users include:
+
+- engineers exploring how to steer **customer support**, **education**, or **ops** behaviors without fine-tuning
+- researchers who want a compact ActAdd baseline before moving to CAA, SEA, or SAE-guided methods
+- builders experimenting with **open-source SLMs** and wanting a clean repo to swap models, prompts, and layers
+- educators who want a concrete, reproducible example of activation engineering instead of only a paper summary
 
 ## What is implemented today
 
@@ -39,13 +51,59 @@ The current repository supports:
 - compact JSON artifact generation for public demos
 - optional Ollama-vs-HF runtime baseline comparison
 
+## Real starter-kit use cases
+
+The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic “vector playground.”
+
+These examples are generated from real model runs and are meant to show practical reasons someone might care about activation steering in the first place.
+
+![Starter use cases](docs/assets/starter_use_cases.gif)
+
+The machine-readable output for the starter-kit demos lives in `docs/showcase/use_case_showcase.json`.
+
+### 1. Customer support de-escalation
+
+Use case: take the same base support model and nudge it toward a calmer, more empathetic reply style for damaged-order and complaint scenarios.
+
+Why it matters:
+
+- support teams often want more ownership and reassurance in replies
+- tone changes can matter even when the underlying factual task stays the same
+- steering is interesting here because it changes the *how* without retraining the model weights
+
+![Customer support steering](docs/assets/use_case_customer_support_empathy.gif)
+
+### 2. Encouraging tutoring explanations
+
+Use case: nudge a small open model toward more learner-friendly explanations for education and tutoring flows.
+
+Why it matters:
+
+- tutoring quality is not just about correctness; it is also about scaffolding and confidence-building
+- a base model may already know the answer, but steering can change how it presents that answer
+
+![Tutor steering](docs/assets/use_case_tutor_encouragement.gif)
+
+### 3. Risk-aware launch recommendations
+
+Use case: steer a model toward more calibrated rollout advice for product, operations, and release workflows.
+
+Why it matters:
+
+- teams frequently need models to sound more cautious, more explicit about tradeoffs, or more rollout-aware
+- this is a good example of steering a *decision posture* rather than only a sentiment label
+
+![Release risk steering](docs/assets/use_case_release_risk_calibration.gif)
+
+Together, these demos make the central point of the repo clearer: activation steering is useful when you want to **shift the behavior style of an open model for a real task**, not only when you want to produce a novelty sentiment demo.
+
 ## Visual overview
 
 ![Activation steering workflow](docs/assets/activation_steering_flow.svg)
 
 ![Pre and post activation hook locations](docs/assets/pre_post_hooking.svg)
 
-### Demo GIFs
+### Technical GIFs
 
 These assets are generated from the local showcase script and illustrate the public-facing examples referenced in this README:
 
@@ -57,6 +115,7 @@ These assets are generated from the local showcase script and illustrate the pub
 The corresponding machine-readable outputs live in:
 
 - `docs/showcase/pre_post_showcase.json`
+- `docs/showcase/use_case_showcase.json`
 - `docs/showcase/ollama_vs_hf_baseline.json`
 
 For terminal-recording enthusiasts: `docs/tapes/` includes optional VHS notes so you can create terminal-native GIFs on compatible setups. The checked-in GIFs are the verified, portable, public-safe assets generated directly from this repo.
@@ -161,8 +220,15 @@ python scripts/run_actadd.py --config configs/prompt_pairs/sentiment_rich.yaml -
 Generate the tracked JSON and GIF assets used in this README:
 
 ```powershell
-python scripts/build_showcase.py
+python scripts/build_showcase.py --skip-ollama
 ```
+
+That command generates:
+
+- the technical pre/post showcase
+- the starter-kit use-case GIFs
+- the combined `starter_use_cases.gif`
+- the machine-readable JSON used by the README examples
 
 ### 3. Ollama vs Hugging Face baseline comparison
 
@@ -171,6 +237,19 @@ python scripts/compare_baselines.py --prompt "Explain what a steering vector is 
 ```
 
 Important caveat: Ollama vs HF is a **runtime baseline**, not a scientifically pure causal control, because GGUF quantization and safetensors inference can differ even before steering is applied.
+
+## How to use this repo as a starter kit for other open-source SLMs
+
+If you want to adapt this repo beyond Gemma 4, the practical workflow is:
+
+1. pick an open model with Hugging Face access to hidden states
+2. set `HF_MODEL_ID` and `HF_MODEL_LOCAL_DIR` in `.env`
+3. verify that the transformer layers are discovered by `locate_transformer_layers()` in `src/llm_steering/steering.py`
+4. copy `configs/prompt_pairs/starter_prompt_pair_example.yaml` and edit it for your use case
+5. sweep layer and coefficient values instead of trusting defaults forever
+6. export a compact public artifact showing baseline vs steered behavior
+
+The repo already supports several common decoder-layer layouts through `LAYER_PATH_CANDIDATES`, so swapping models is not purely theoretical. The easiest path is still to start with Gemma 4 E2B, then try other open-source SLMs that expose a compatible transformer stack.
 
 ## Model support and extension path
 
@@ -224,8 +303,10 @@ python scripts/download_hf_gemma4.py
 ### 6. Run the public demo path
 
 ```powershell
-python scripts/build_showcase.py
+python scripts/build_showcase.py --skip-ollama
 ```
+
+If you want the optional runtime comparison too, rerun without `--skip-ollama`.
 
 ## Repository layout
 
@@ -294,6 +375,7 @@ Near-term extensions that fit the current architecture:
 
 - public showcase assets are generated by `scripts/build_showcase.py`
 - tracked demo outputs live in `docs/showcase/`
+- starter-kit use case assets live in `docs/assets/use_case_*.gif` and `docs/assets/starter_use_cases.gif`
 - heavyweight local artifacts remain out of git by design
 - all public claims in this README are meant to map to code or artifacts inside the repo
 

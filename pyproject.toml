@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "llm-steering"
 version = "0.1.0"
-description = "Activation steering and steering vector experimentation workspace for Gemma 4 and related LLMs."
+description = "Starter kit for activation steering and steering-vector experiments on Gemma 4 and other open-source SLMs."
 readme = "README.md"
 authors = [
   {name = "smgpulse007"},
