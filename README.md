@@ -15,6 +15,10 @@ This repository turns that idea into a practical engineering lab:
 
 The current posture is a full starter kit: a reproducible Python steering path, a registry-backed FastAPI layer, and a polished local workbench UI for choosing a model, tuning steering controls, comparing outputs, and learning the math behind the intervention.
 
+## Portfolio relevance
+
+Demonstrates model behavior control, experimentation discipline, local-first AI infrastructure, FastAPI and React productization, reproducible artifacts, and public-safe LLM research engineering.
+
 ## Project thesis
 
 The thesis of this project is not merely “steering vectors are neat.” It is more specific:
