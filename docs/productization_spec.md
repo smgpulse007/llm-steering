@@ -46,8 +46,8 @@ Local validation on 2026-07-05:
 - `.\.venv\Scripts\python.exe -m llm_steering.cli demo --toy --json`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli showcase validate`: passed
 - Frontend chunk split: Markdown renderer dependencies now build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
-- Clean GitHub runner validation: `ci` run `28793007839` passed on branch `codex/docs-first-pages`
-- GitHub Pages workflow and static build exist; live action status should be rechecked after this branch is pushed or merged
+- Clean GitHub runner validation: branch `ci` run `28793358581` and `main` `ci` run `28793530414` passed
+- GitHub Pages deployment: `pages` run `28793530417` deployed from `main` and the public docs route was browser-verified
 
 ## 3. Product Definition
 

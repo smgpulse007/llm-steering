@@ -1,22 +1,30 @@
 # llm-steering Release Validation Snapshot
 
 Date: 2026-07-06
-Branch: `codex/docs-first-pages`
-Head SHA: `df4e533a0584479aef11d92f2b4aad90f71d2772`
+Branches: `codex/docs-first-pages`, `main`
+Validated landing commit: `6c7b0a54c097eb68ac094ba52c68dfcc9c7461f3`
 Repository: `https://github.com/smgpulse007/llm-steering`
 
 ## Clean Environment Evidence
 
-GitHub Actions CI passed on a fresh Ubuntu runner:
+GitHub Actions CI passed on fresh Ubuntu runners:
 
-- Workflow: `ci`
-- Run: `https://github.com/smgpulse007/llm-steering/actions/runs/28793007839`
-- Job: `tests`
-- Result: `success`
-- Started: `2026-07-06T12:54:25Z`
-- Completed: `2026-07-06T12:56:41Z`
+- Branch validation:
+  - Workflow: `ci`
+  - Run: `https://github.com/smgpulse007/llm-steering/actions/runs/28793358581`
+  - Job: `tests`
+  - Result: `success`
+  - Started: `2026-07-06T13:00:20Z`
+  - Completed: `2026-07-06T13:02:44Z`
+- Main validation:
+  - Workflow: `ci`
+  - Run: `https://github.com/smgpulse007/llm-steering/actions/runs/28793530414`
+  - Job: `tests`
+  - Result: `success`
+  - Started: `2026-07-06T13:03:33Z`
+  - Completed: `2026-07-06T13:07:11Z`
 
-The CI job validated:
+The CI jobs validated:
 
 - Base editable install: `python -m pip install -e .`
 - Base no-model CLI path:
@@ -31,6 +39,18 @@ The CI job validated:
 - Normal web build: `npm run build`
 - Pages web build: `npm run build:pages`
 - Pages asset-base validation: `python scripts/validate_pages_build.py`
+
+## Pages Deployment Evidence
+
+GitHub Pages deployed the validated landing commit from `main`:
+
+- Workflow: `pages`
+- Run: `https://github.com/smgpulse007/llm-steering/actions/runs/28793530417`
+- Build job: `success`, completed `2026-07-06T13:04:01Z`
+- Deploy job: `success`, completed `2026-07-06T13:04:15Z`
+- Public URL: `https://smgpulse007.github.io/llm-steering/`
+- Browser route verified: `https://smgpulse007.github.io/llm-steering/#docs/lesson_actadd`
+- Public route checks: React root rendered, docs navigation visible, lesson content visible, asset URLs use `/llm-steering/`, and no browser console errors were observed.
 
 ## Local Closeout Evidence
 

@@ -29,7 +29,7 @@ Local validation:
 - Toy demo CLI: passed
 - Structural showcase/source JSON validation: passed
 - Frontend chunk split: Markdown renderer dependencies build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
-- Clean-environment CI validation: passed on GitHub Actions run `28793007839`; latest evidence is recorded in `docs/release_validation.md`
+- Clean-environment CI validation: passed on branch run `28793358581` and `main` run `28793530414`; latest evidence is recorded in `docs/release_validation.md`
 
 Tracked hygiene:
 
@@ -326,7 +326,7 @@ The project can be called open source product ready when:
 - Release checklist and changelog exist.
 - A clean-environment install test has been performed and documented.
   - Status: implemented for the current branch.
-  - Evidence: `docs/release_validation.md` records GitHub Actions run `28793007839`.
+  - Evidence: `docs/release_validation.md` records GitHub Actions runs `28793358581` and `28793530414`.
 
 ## Immediate Next Implementation Slice
 
