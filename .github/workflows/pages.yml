@@ -29,6 +29,11 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
@@ -36,6 +41,9 @@ jobs:
       - name: Build Pages site
         working-directory: apps/web
         run: npm run build:pages
+
+      - name: Validate Pages build
+        run: python scripts/validate_pages_build.py
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

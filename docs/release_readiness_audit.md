@@ -46,7 +46,7 @@ Tracked hygiene:
 | Beginner education | Good baseline | Medium | Beginner lessons and a no-model toy demo exist; in-browser toy simulation remains later work. |
 | Research grounding | Good | Low | Research notes exist; claims need tighter source-to-feature mapping. |
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
-| CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, and frontend build are configured. |
+| CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, frontend build, Pages build, and Pages asset validation are configured. |
 | Model support gating | Improved | Medium | Registry gates unsupported models, and hook smoke-test CLI/API/workbench reports now exist; live model promotion still needs per-model evidence. |
 | Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, sweep manifests, and CLI/API validation; richer metrics still need hardening. |
 | Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
@@ -155,6 +155,7 @@ Strengths:
 
 - Python 3.13 CI exists.
 - Editable install and tests run.
+- Normal frontend build, Pages build, and Pages asset-base validation run.
 
 Gaps:
 
@@ -229,6 +230,7 @@ Scope:
 - CLI.
 - Install matrix.
 - CI frontend build.
+- CI Pages asset validation.
 - No-model verification.
 
 Exit:

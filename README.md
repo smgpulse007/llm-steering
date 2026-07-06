@@ -127,6 +127,9 @@ To smoke-test the exact Pages route locally:
 ```powershell
 cd apps/web
 npm run build:pages
+cd ..\..
+python scripts/validate_pages_build.py
+cd apps/web
 npm run preview:pages
 ```
 

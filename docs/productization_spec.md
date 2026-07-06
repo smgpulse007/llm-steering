@@ -513,6 +513,7 @@ Deliverables:
 - Expanded CI:
   - Python tests
   - frontend build
+  - Pages build asset-base validation
   - docs link/path check
   - JSON artifact schema validation
   - optional no-model CLI smoke
