@@ -100,7 +100,7 @@ Tracked hygiene:
 Completed follow-up:
 
 - Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
-- Local docs now expose table-of-contents metadata and hashable section links in the API and static Pages fallback.
+- Local docs now expose table-of-contents metadata, search/filter affordances, and hashable section links in the API and static Pages fallback.
 - Output and artifact copy/download actions are available in the workbench UI.
 - Layer/coefficient sweeps can execute through the backend/API/CLI/workbench and produce versioned sweep manifests.
 - Hook smoke-test reports are available through the CLI and API.
@@ -168,7 +168,7 @@ Strengths:
 - Model registry fallback.
 - API client exists.
 - Markdown rendering and safe diff logic exist.
-- Public docs reader has document groups, an in-document outline, and stable section links.
+- Public docs reader has document groups, search/filter, an in-document outline, and stable section links.
 - Static Pages mode bundles the same docs inventory as the local API for public browsing.
 - Output panes and artifact rail include copy/download actions for review handoff.
 

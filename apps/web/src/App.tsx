@@ -18,6 +18,7 @@ import {
   Layers,
   Play,
   ScrollText,
+  Search,
   SlidersHorizontal,
   Sparkles,
   TerminalSquare,
@@ -1205,7 +1206,18 @@ function DocsExplorer({
   docContent: LocalDocContent | null;
   className?: string;
 }) {
-  const categories = Array.from(new Set(docs.map((doc) => doc.category)));
+  const [docQuery, setDocQuery] = useState("");
+  const normalizedDocQuery = docQuery.trim().toLowerCase();
+  const filteredDocs = useMemo(
+    () =>
+      normalizedDocQuery
+        ? docs.filter((doc) =>
+            [doc.title, doc.summary, doc.path, doc.category].join(" ").toLowerCase().includes(normalizedDocQuery)
+          )
+        : docs,
+    [docs, normalizedDocQuery]
+  );
+  const categories = Array.from(new Set(filteredDocs.map((doc) => doc.category)));
   const sections = docContent?.sections ?? [];
 
   return (
@@ -1215,10 +1227,25 @@ function DocsExplorer({
           <ScrollText size={18} />
           <span>{title}</span>
         </div>
+        <label className="doc-search">
+          <Search size={16} />
+          <input
+            aria-label={`${title} search`}
+            placeholder="Search docs"
+            value={docQuery}
+            onChange={(event) => setDocQuery(event.target.value)}
+          />
+        </label>
+        <p className="doc-count">
+          Showing {filteredDocs.length} of {docs.length} docs
+        </p>
         {categories.map((category) => (
           <div className="doc-group" key={category}>
-            <span>{docCategoryLabels[category] ?? category}</span>
-            {docs
+            <span>
+              {docCategoryLabels[category] ?? category}
+              <em>{filteredDocs.filter((doc) => doc.category === category).length}</em>
+            </span>
+            {filteredDocs
               .filter((doc) => doc.category === category)
               .map((doc) => (
                 <button
@@ -1233,6 +1260,7 @@ function DocsExplorer({
               ))}
           </div>
         ))}
+        {!filteredDocs.length ? <p className="doc-empty">No bundled docs match that search.</p> : null}
       </aside>
       <DocOutline docId={selectedDocId} sections={sections} onSelectDoc={onSelectDoc} />
       <section className="glass-panel doc-reader">

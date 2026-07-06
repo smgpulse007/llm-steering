@@ -1230,12 +1230,57 @@ code {
   gap: 8px;
 }
 
+.doc-search {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(7, 10, 10, 0.42);
+  padding: 0 10px;
+  color: #9ac3bd;
+}
+
+.doc-search input {
+  min-height: 38px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.doc-count,
+.doc-empty {
+  margin: -3px 0 0;
+  color: #9fb0aa;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.doc-empty {
+  margin-top: 2px;
+  color: #ffd2a8;
+}
+
 .doc-group > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
   color: #9ac3bd;
   font-size: 0.72rem;
   font-weight: 820;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.doc-group > span em {
+  min-width: 22px;
+  border: 1px solid rgba(157, 240, 200, 0.18);
+  border-radius: 999px;
+  color: #dce8e3;
+  font-style: normal;
+  text-align: center;
 }
 
 .doc-group + .doc-group {

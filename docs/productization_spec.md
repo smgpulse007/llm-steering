@@ -285,7 +285,7 @@ Deliverables:
 - Pages build workflow.
 - Vite `base` configured for `/llm-steering/`.
 - Static site mode that uses checked-in showcase JSON/GIFs.
-- Public docs reader with grouped documents, section outline, and hashable section links.
+- Public docs reader with grouped documents, search/filter, section outline, and hashable section links.
 - Static Pages docs bundle that matches the local API docs inventory.
 - Home page with:
   - project thesis
