@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1 --port 5173",
     "build": "tsc --noEmit && vite build",
     "build:pages": "tsc --noEmit && vite build --base=/llm-steering/",
-    "preview": "vite preview --host 127.0.0.1 --port 4173"
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "preview:pages": "vite preview --host 127.0.0.1 --port 4173 --base=/llm-steering/"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",

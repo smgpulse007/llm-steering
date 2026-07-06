@@ -113,6 +113,16 @@ The UI proxies `/api/*` calls to `http://127.0.0.1:8000` during development. The
 
 The GitHub Pages build runs in static mode. It teaches the beginner path, renders the local docs with section outlines, and displays checked-in showcase artifacts, but it does not run the FastAPI API or generate new model outputs in the browser.
 
+To smoke-test the exact Pages route locally:
+
+```powershell
+cd apps/web
+npm run build:pages
+npm run preview:pages
+```
+
+Then open `http://127.0.0.1:4173/llm-steering/`.
+
 ## Real starter-kit use cases
 
 The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic "vector playground."

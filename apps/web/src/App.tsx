@@ -1048,8 +1048,8 @@ function LearningHome({
 }) {
   return (
     <section className="public-home">
-      <section className="glass-panel public-intro">
-        <div>
+      <section className="public-hero">
+        <div className="public-hero-copy">
           <p className="eyebrow">open source activation steering lab</p>
           <h2>Learn the basics, then run real local steering experiments.</h2>
           <p>
@@ -1057,26 +1057,65 @@ function LearningHome({
             hook stages, and evaluation discipline. Public Pages mode uses checked-in artifacts; the
             local workbench connects to FastAPI and a supported Hugging Face model.
           </p>
-        </div>
-        <div className="public-actions">
-          <button className="primary-button" onClick={onOpenDocs}>
-            <GraduationCap size={16} /> Start Lessons
-          </button>
-          <button className="secondary-button compact" onClick={onOpenConsole}>
-            <TerminalSquare size={16} /> Open Workbench
-          </button>
-          <div className="public-links" aria-label="Project links">
-            <a href="https://github.com/smgpulse007/llm-steering" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href="https://github.com/smgpulse007/llm-steering#readme" target="_blank" rel="noreferrer">
-              README
-            </a>
-            <a href="https://github.com/smgpulse007/llm-steering/tree/main/research" target="_blank" rel="noreferrer">
-              Research
-            </a>
+          <div className="public-actions">
+            <button className="primary-button" onClick={onOpenDocs}>
+              <GraduationCap size={16} /> Start Lessons
+            </button>
+            <button className="secondary-button compact" onClick={onOpenConsole}>
+              <TerminalSquare size={16} /> Open Workbench
+            </button>
+            <div className="public-links" aria-label="Project links">
+              <a href="https://github.com/smgpulse007/llm-steering" target="_blank" rel="noreferrer">
+                GitHub
+              </a>
+              <a href="https://github.com/smgpulse007/llm-steering#readme" target="_blank" rel="noreferrer">
+                README
+              </a>
+              <a href="https://github.com/smgpulse007/llm-steering/tree/main/research" target="_blank" rel="noreferrer">
+                Research
+              </a>
+            </div>
           </div>
         </div>
+        <figure className="public-hero-visual">
+          <img src={showcaseUseCases[0].assetUrl} alt="Activation steering use-case artifact preview" />
+          <figcaption>
+            <strong>Pages preview mode</strong>
+            <span>Read the curriculum, inspect checked-in artifacts, then switch to the local API for live runs.</span>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section className="public-proof-strip" aria-label="Repository proof points">
+        <article>
+          <BookOpen size={18} />
+          <span>Beginner curriculum</span>
+          <strong>7 lessons</strong>
+        </article>
+        <article>
+          <ScrollText size={18} />
+          <span>Bundled references</span>
+          <strong>Docs + research</strong>
+        </article>
+        <article>
+          <FlaskConical size={18} />
+          <span>Experiment surface</span>
+          <strong>Static + local</strong>
+        </article>
+        <article>
+          <CheckCircle2 size={18} />
+          <span>Validation gates</span>
+          <strong>Artifacts + smoke tests</strong>
+        </article>
+      </section>
+
+      <section className="section-kicker">
+        <p className="eyebrow">docs library</p>
+        <h2>Use the docs pane as the table of contents.</h2>
+        <p>
+          The public site bundles the same local lessons, methodology notes, glossary, and research trail that ship
+          with the repo. The center outline keeps long docs navigable without sending readers back to GitHub.
+        </p>
       </section>
 
       <DocsExplorer
