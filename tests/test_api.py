@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
+from types import SimpleNamespace
 
 from llm_steering.artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION
+from llm_steering import api as api_module
 from llm_steering.api import create_app
 from llm_steering.docs_index import LOCAL_DOCS
 from llm_steering.experiments import default_result_path
@@ -47,6 +49,44 @@ def test_api_sweep_returns_layer_coefficient_plan() -> None:
     payload = response.json()
     assert payload["status"] == "planned"
     assert payload["count"] == 4
+
+
+def test_api_sweep_run_returns_sweep_artifact(monkeypatch) -> None:
+    def fake_run_sweep(base_request, *, layers, coefficients):
+        return SimpleNamespace(
+            to_dict=lambda: {
+                "schema_version": "llm-steering.sweep.v1",
+                "artifact_kind": "sweep_result",
+                "sweep_id": "sweep_test",
+                "status": "completed",
+                "run_count": len(layers) * len(coefficients),
+                "axes": {"layers": layers, "coefficients": coefficients},
+                "base_request": {"model_id": base_request.model_id},
+                "runs": [],
+            }
+        )
+
+    monkeypatch.setattr(api_module, "run_sweep", fake_run_sweep)
+    client = TestClient(create_app())
+    response = client.post(
+        "/api/experiments/sweep/run",
+        json={
+            "model_id": "google/gemma-4-E2B-it",
+            "system_prompt": "",
+            "user_prompt": "Explain steering.",
+            "prompt_pairs": [{"positive": "Helpful", "negative": "Unhelpful"}],
+            "layer": 18,
+            "coefficient": 1.0,
+            "layers": [12, 18],
+            "coefficients": [0.5, 1.0],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["artifact_kind"] == "sweep_result"
+    assert payload["run_count"] == 4
+    assert payload["axes"] == {"layers": [12, 18], "coefficients": [0.5, 1.0]}
 
 
 def test_api_vector_build_gates_diffusiongemma() -> None:

@@ -53,7 +53,7 @@ Typical users include:
 The current repository supports:
 
 - a no-model toy activation-steering demo for first-time learners
-- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering showcase`, `llm-steering artifacts`, and `llm-steering validate-model`
+- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering sweep`, `llm-steering showcase`, `llm-steering artifacts`, and `llm-steering validate-model`
 - local Hugging Face loading for `google/gemma-4-E2B-it`
 - a registry-backed FastAPI workbench API for model support status, runtime settings, and gated experiment runs
 - a Vite + React + TypeScript workbench UI under `apps/web`
@@ -64,6 +64,7 @@ The current repository supports:
 - **pre-activation steering** via forward pre-hooks
 - token targeting for either `last_token` or `all_tokens`
 - compact JSON artifact generation for public demos
+- executable layer/coefficient sweeps with versioned sweep manifests
 - optional Ollama-vs-HF runtime baseline comparison
 
 ## Steering workbench UI
@@ -361,6 +362,7 @@ llm-steering verify --no-model
 llm-steering demo --toy --json
 llm-steering showcase validate
 llm-steering artifacts validate
+llm-steering sweep --request .\examples\experiment_request.json --layers 12 18 --coefficients 0.5 1.0 --plan-only
 ```
 
 The toy demo is explicitly synthetic. It explains steering-vector mechanics with named behavior features, not real transformer hidden states.

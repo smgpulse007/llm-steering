@@ -19,6 +19,7 @@ from .experiments import (
     default_result_path,
     request_from_mapping,
     run_experiment,
+    run_sweep,
     sweep_plan,
 )
 from .introspection import registry_only_report
@@ -119,6 +120,20 @@ def create_app() -> Any:
                 for request in planned
             ],
         }
+
+    @app.post("/api/experiments/sweep/run")
+    def api_experiment_sweep_run(payload: dict[str, Any]) -> dict[str, object]:
+        try:
+            base = request_from_mapping(payload)
+            layers = [int(layer) for layer in payload.get("layers", [base.layer])]
+            coefficients = [float(coefficient) for coefficient in payload.get("coefficients", [base.coefficient])]
+            return run_sweep(base, layers=layers, coefficients=coefficients).to_dict()
+        except KeyError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except SteeringReadinessError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.get("/api/experiments/{experiment_id}")
     def api_experiment_get(experiment_id: str) -> dict[str, object]:

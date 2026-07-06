@@ -112,6 +112,39 @@ export type SweepPlan = {
   }>;
 };
 
+export type SweepResult = {
+  schema_version: string;
+  artifact_kind: "sweep_result";
+  sweep_id: string;
+  created_at_utc: string;
+  base_request: Record<string, unknown>;
+  model_status: Record<string, unknown>;
+  axes: {
+    layers: number[];
+    coefficients: number[];
+  };
+  run_count: number;
+  status: string;
+  runs: Array<{
+    index: number;
+    experiment_id: string;
+    layer: number;
+    coefficient: number;
+    hook_stage: string;
+    apply_to: string;
+    artifact_path: string | null;
+    vector_path: string | null;
+    diagnostics: ExperimentResult["diagnostics"];
+    output_delta: OutputDelta;
+    control_delta: OutputDelta;
+    steering_delta: OutputDelta;
+    reproduce_command: string;
+  }>;
+  aggregate_diagnostics: Record<string, unknown>;
+  artifact_path: string | null;
+  reproduce_command: string;
+};
+
 export type LocalDoc = {
   doc_id: string;
   title: string;

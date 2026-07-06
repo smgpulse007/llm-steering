@@ -91,6 +91,7 @@ Recommended endpoints:
 - `POST /api/vectors/build`
 - `POST /api/experiments/run`
 - `POST /api/experiments/sweep`
+- `POST /api/experiments/sweep/run`
 - `GET /api/experiments/{id}`
 - `GET /api/runtime/status`
 

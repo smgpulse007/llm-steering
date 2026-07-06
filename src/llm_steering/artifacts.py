@@ -7,10 +7,12 @@ from typing import Any, Callable
 
 EXPERIMENT_SCHEMA_VERSION = "llm-steering.experiment.v1"
 VECTOR_SCHEMA_VERSION = "llm-steering.vector.v1"
+SWEEP_SCHEMA_VERSION = "llm-steering.sweep.v1"
 SHOWCASE_SCHEMA_VERSION = "llm-steering.showcase.v1"
 
 EXPERIMENT_KIND = "experiment_result"
 VECTOR_KIND = "vector_artifact"
+SWEEP_KIND = "sweep_result"
 PRE_POST_SHOWCASE_KIND = "pre_post_showcase"
 USE_CASE_SHOWCASE_KIND = "use_case_showcase"
 RUNTIME_BASELINE_KIND = "runtime_baseline"
@@ -36,6 +38,8 @@ def _require_schema(payload: dict[str, Any], *, kind: str, path: str) -> list[st
         errors.append(f"{path}: schema_version must be {EXPERIMENT_SCHEMA_VERSION!r}")
     if payload.get("schema_version") != VECTOR_SCHEMA_VERSION and kind == VECTOR_KIND:
         errors.append(f"{path}: schema_version must be {VECTOR_SCHEMA_VERSION!r}")
+    if payload.get("schema_version") != SWEEP_SCHEMA_VERSION and kind == SWEEP_KIND:
+        errors.append(f"{path}: schema_version must be {SWEEP_SCHEMA_VERSION!r}")
     if payload.get("artifact_kind") != kind:
         errors.append(f"{path}: artifact_kind must be {kind!r}")
     return errors
@@ -96,6 +100,67 @@ def validate_vector_artifact(payload: Any, *, path: str = "artifact") -> list[st
         errors.append(f"{path}.metadata: expected object")
     if not isinstance(payload.get("diagnostics"), dict):
         errors.append(f"{path}.diagnostics: expected object")
+    return errors
+
+
+def validate_sweep_result(payload: Any, *, path: str = "artifact") -> list[str]:
+    errors = _require_mapping(payload, path=path)
+    if errors:
+        return errors
+    assert isinstance(payload, dict)
+    errors.extend(_require_schema(payload, kind=SWEEP_KIND, path=path))
+    errors.extend(
+        _require_keys(
+            payload,
+            {
+                "sweep_id",
+                "created_at_utc",
+                "base_request",
+                "model_status",
+                "axes",
+                "run_count",
+                "runs",
+                "status",
+                "reproduce_command",
+            },
+            path=path,
+        )
+    )
+    if not isinstance(payload.get("base_request"), dict):
+        errors.append(f"{path}.base_request: expected object")
+    if not isinstance(payload.get("model_status"), dict):
+        errors.append(f"{path}.model_status: expected object")
+    if not isinstance(payload.get("axes"), dict):
+        errors.append(f"{path}.axes: expected object")
+    runs = payload.get("runs")
+    if not isinstance(runs, list) or not runs:
+        errors.append(f"{path}.runs: expected non-empty list")
+        return errors
+    if payload.get("run_count") != len(runs):
+        errors.append(f"{path}.run_count: expected {len(runs)}")
+    for index, run in enumerate(runs):
+        if not isinstance(run, dict):
+            errors.append(f"{path}.runs[{index}]: expected object")
+            continue
+        errors.extend(
+            _require_keys(
+                run,
+                {
+                    "index",
+                    "experiment_id",
+                    "layer",
+                    "coefficient",
+                    "artifact_path",
+                    "vector_path",
+                    "diagnostics",
+                    "output_delta",
+                    "control_delta",
+                    "steering_delta",
+                    "reproduce_command",
+                },
+                path=f"{path}.runs[{index}]",
+            )
+        )
     return errors
 
 
@@ -177,6 +242,7 @@ def validate_runtime_baseline(payload: Any, *, path: str = "artifact") -> list[s
 ARTIFACT_VALIDATORS: dict[str, Callable[[Any], list[str]]] = {
     EXPERIMENT_KIND: lambda payload: validate_experiment_result(payload),
     VECTOR_KIND: lambda payload: validate_vector_artifact(payload),
+    SWEEP_KIND: lambda payload: validate_sweep_result(payload),
     PRE_POST_SHOWCASE_KIND: lambda payload: validate_pre_post_showcase(payload),
     USE_CASE_SHOWCASE_KIND: lambda payload: validate_use_case_showcase(payload),
     RUNTIME_BASELINE_KIND: lambda payload: validate_runtime_baseline(payload),
@@ -195,6 +261,8 @@ def validate_artifact_payload(payload: Any, *, path: str = "artifact") -> dict[s
         errors = validate_experiment_result(payload, path=path)
     elif kind == VECTOR_KIND:
         errors = validate_vector_artifact(payload, path=path)
+    elif kind == SWEEP_KIND:
+        errors = validate_sweep_result(payload, path=path)
     elif kind == PRE_POST_SHOWCASE_KIND:
         errors = validate_pre_post_showcase(payload, path=path)
     elif kind == USE_CASE_SHOWCASE_KIND:

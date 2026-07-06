@@ -9,7 +9,14 @@ from uuid import uuid4
 
 import torch
 
-from .artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION, VECTOR_KIND, VECTOR_SCHEMA_VERSION
+from .artifacts import (
+    EXPERIMENT_KIND,
+    EXPERIMENT_SCHEMA_VERSION,
+    SWEEP_KIND,
+    SWEEP_SCHEMA_VERSION,
+    VECTOR_KIND,
+    VECTOR_SCHEMA_VERSION,
+)
 from .config import RuntimeSettings, project_root
 from .hf_runtime import LoadedHFModel, generate_text, load_hf_model
 from .metrics import output_delta_metrics, vector_diagnostics
@@ -86,6 +93,26 @@ class ExperimentResult:
         return asdict(self)
 
 
+@dataclass(frozen=True, slots=True)
+class SweepResult:
+    schema_version: str
+    artifact_kind: str
+    sweep_id: str
+    created_at_utc: str
+    base_request: dict[str, object]
+    model_status: dict[str, object]
+    axes: dict[str, object]
+    run_count: int
+    status: str
+    runs: list[dict[str, object]]
+    aggregate_diagnostics: dict[str, object]
+    artifact_path: str | None
+    reproduce_command: str
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
+
+
 def _repo_relative(path: Path | None) -> str | None:
     if path is None:
         return None
@@ -107,6 +134,17 @@ def build_cli_command(request: ExperimentRequest) -> str:
     )
 
 
+def build_sweep_cli_command(base_request: ExperimentRequest, *, layers: list[int], coefficients: list[float]) -> str:
+    layer_args = " ".join(str(layer) for layer in layers)
+    coefficient_args = " ".join(str(coefficient) for coefficient in coefficients)
+    return (
+        "llm-steering sweep "
+        "--request <experiment-request.json> "
+        f"--layers {layer_args} "
+        f"--coefficients {coefficient_args}"
+    )
+
+
 def default_vector_path(request: ExperimentRequest, experiment_id: str) -> Path:
     model_stub = request.model_id.replace("/", "_").replace(":", "_")
     return project_root() / "vectors" / f"{experiment_id}_{model_stub}_layer{request.layer}.pt"
@@ -114,6 +152,10 @@ def default_vector_path(request: ExperimentRequest, experiment_id: str) -> Path:
 
 def default_result_path(experiment_id: str) -> Path:
     return project_root() / "results" / f"{experiment_id}.json"
+
+
+def default_sweep_path(sweep_id: str) -> Path:
+    return project_root() / "results" / f"{sweep_id}.json"
 
 
 def _build_vector(loaded: LoadedHFModel, request: ExperimentRequest) -> SteeringVectorArtifact:
@@ -266,6 +308,91 @@ def run_experiment(
         vector_path=_repo_relative(vector_path),
         artifact_path=_repo_relative(artifact_path),
         reproduce_command=build_cli_command(request),
+    )
+    if artifact_path is not None:
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_text(json.dumps(result.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+    return result
+
+
+def _serialize_request(request: ExperimentRequest) -> dict[str, object]:
+    return {
+        **asdict(request),
+        "prompt_pairs": [asdict(pair) for pair in request.prompt_pairs],
+    }
+
+
+def _sweep_run_summary(index: int, request: ExperimentRequest, result: ExperimentResult) -> dict[str, object]:
+    return {
+        "index": index,
+        "experiment_id": result.experiment_id,
+        "layer": request.layer,
+        "coefficient": request.coefficient,
+        "hook_stage": request.hook_stage,
+        "apply_to": request.apply_to,
+        "artifact_path": result.artifact_path,
+        "vector_path": result.vector_path,
+        "diagnostics": result.diagnostics,
+        "output_delta": result.output_delta,
+        "control_delta": result.control_delta,
+        "steering_delta": result.steering_delta,
+        "reproduce_command": result.reproduce_command,
+    }
+
+
+def _aggregate_sweep_runs(runs: list[dict[str, object]]) -> dict[str, object]:
+    return {
+        "changed_runs": sum(1 for run in runs if dict(run.get("output_delta") or {}).get("changed")),
+        "prompt_control_changed_runs": sum(1 for run in runs if dict(run.get("control_delta") or {}).get("changed")),
+        "activation_changed_runs": sum(1 for run in runs if dict(run.get("steering_delta") or {}).get("changed")),
+        "completed_runs": len(runs),
+    }
+
+
+def run_sweep(
+    base_request: ExperimentRequest,
+    *,
+    layers: list[int],
+    coefficients: list[float],
+    settings: RuntimeSettings | None = None,
+    loaded: LoadedHFModel | None = None,
+    save_artifacts: bool = True,
+) -> SweepResult:
+    if not layers:
+        raise ValueError("At least one sweep layer is required.")
+    if not coefficients:
+        raise ValueError("At least one sweep coefficient is required.")
+
+    entry = get_model_entry(base_request.model_id)
+    require_steering_ready(base_request.model_id)
+    planned = sweep_plan(base_request, layers=layers, coefficients=coefficients)
+    runtime_settings = settings or RuntimeSettings.from_env()
+    loaded_model = loaded or load_hf_model(runtime_settings, model_id=base_request.model_id)
+    sweep_id = f"sweep_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid4().hex[:8]}"
+
+    runs = [
+        _sweep_run_summary(
+            index,
+            request,
+            run_experiment(request, settings=runtime_settings, loaded=loaded_model, save_artifacts=save_artifacts),
+        )
+        for index, request in enumerate(planned)
+    ]
+    artifact_path = default_sweep_path(sweep_id) if save_artifacts else None
+    result = SweepResult(
+        schema_version=SWEEP_SCHEMA_VERSION,
+        artifact_kind=SWEEP_KIND,
+        sweep_id=sweep_id,
+        created_at_utc=datetime.now(timezone.utc).isoformat(),
+        base_request=_serialize_request(base_request),
+        model_status=entry.to_dict(),
+        axes={"layers": layers, "coefficients": coefficients},
+        run_count=len(runs),
+        status="completed",
+        runs=runs,
+        aggregate_diagnostics=_aggregate_sweep_runs(runs),
+        artifact_path=_repo_relative(artifact_path),
+        reproduce_command=build_sweep_cli_command(base_request, layers=layers, coefficients=coefficients),
     )
     if artifact_path is not None:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)

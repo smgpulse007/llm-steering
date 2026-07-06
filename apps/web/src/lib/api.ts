@@ -7,6 +7,7 @@ import type {
   ModelRegistryEntry,
   RuntimeStatus,
   SweepPlan,
+  SweepResult,
   VectorBuildResult
 } from "./types";
 import { getStaticDoc, staticDocs } from "./lessons";
@@ -170,6 +171,17 @@ export async function planSweep(
   coefficients: number[]
 ): Promise<SweepPlan> {
   return requestJson<SweepPlan>("/api/experiments/sweep", {
+    method: "POST",
+    body: JSON.stringify({ ...payload, layers, coefficients })
+  });
+}
+
+export async function runSweep(
+  payload: ExperimentPayload,
+  layers: number[],
+  coefficients: number[]
+): Promise<SweepResult> {
+  return requestJson<SweepResult>("/api/experiments/sweep/run", {
     method: "POST",
     body: JSON.stringify({ ...payload, layers, coefficients })
   });

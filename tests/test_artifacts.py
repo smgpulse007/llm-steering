@@ -1,8 +1,11 @@
 from llm_steering.artifacts import (
     EXPERIMENT_KIND,
     EXPERIMENT_SCHEMA_VERSION,
+    SWEEP_KIND,
+    SWEEP_SCHEMA_VERSION,
     validate_artifact_payload,
     validate_experiment_result,
+    validate_sweep_result,
 )
 
 
@@ -52,3 +55,38 @@ def test_validate_artifact_payload_rejects_unknown_kind() -> None:
 
     assert result["ok"] is False
     assert result["errors"]
+
+
+def test_validate_sweep_result_accepts_versioned_artifact() -> None:
+    payload = {
+        "schema_version": SWEEP_SCHEMA_VERSION,
+        "artifact_kind": SWEEP_KIND,
+        "sweep_id": "sweep_test",
+        "created_at_utc": "2026-07-06T00:00:00+00:00",
+        "base_request": {"model_id": "google/gemma-4-E2B-it"},
+        "model_status": {"support_status": "supported"},
+        "axes": {"layers": [12], "coefficients": [0.5]},
+        "run_count": 1,
+        "status": "completed",
+        "runs": [
+            {
+                "index": 0,
+                "experiment_id": "exp_test",
+                "layer": 12,
+                "coefficient": 0.5,
+                "artifact_path": "results/exp_test.json",
+                "vector_path": "vectors/exp_test.pt",
+                "diagnostics": {"vector_norm": 1.0},
+                "output_delta": {"changed": True},
+                "control_delta": {"changed": True},
+                "steering_delta": {"changed": True},
+                "reproduce_command": "python scripts/run_actadd.py --config demo.yaml",
+            }
+        ],
+        "aggregate_diagnostics": {"completed_runs": 1},
+        "artifact_path": "results/sweep_test.json",
+        "reproduce_command": "llm-steering sweep --request request.json",
+    }
+
+    assert validate_sweep_result(payload) == []
+    assert validate_artifact_payload(payload)["ok"] is True

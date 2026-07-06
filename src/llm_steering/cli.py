@@ -132,6 +132,41 @@ def command_artifacts(args: argparse.Namespace) -> int:
     return 0 if payload["status"] == "ok" else 1
 
 
+def command_sweep(args: argparse.Namespace) -> int:
+    from .experiments import request_from_mapping, run_sweep, sweep_plan
+
+    payload = json.loads(args.request.read_text(encoding="utf-8"))
+    base_request = request_from_mapping(payload)
+    if args.plan_only:
+        planned = sweep_plan(base_request, layers=args.layers, coefficients=args.coefficients)
+        _print_json(
+            {
+                "status": "planned",
+                "count": len(planned),
+                "runs": [
+                    {
+                        "model_id": request.model_id,
+                        "layer": request.layer,
+                        "coefficient": request.coefficient,
+                        "hook_stage": request.hook_stage,
+                        "apply_to": request.apply_to,
+                    }
+                    for request in planned
+                ],
+            }
+        )
+        return 0
+
+    result = run_sweep(
+        base_request,
+        layers=args.layers,
+        coefficients=args.coefficients,
+        save_artifacts=not args.no_save,
+    )
+    _print_json(result.to_dict())
+    return 0
+
+
 def command_validate_model(args: argparse.Namespace) -> int:
     from .introspection import registry_only_report
 
@@ -178,6 +213,14 @@ def build_parser() -> argparse.ArgumentParser:
     artifacts_validate = artifacts_subparsers.add_parser("validate", help="Validate artifact JSON files.")
     artifacts_validate.add_argument("paths", nargs="*", help="Artifact JSON paths. Defaults to tracked public artifacts.")
     artifacts_validate.set_defaults(func=command_artifacts)
+
+    sweep = subparsers.add_parser("sweep", help="Plan or execute a layer/coefficient experiment sweep.")
+    sweep.add_argument("--request", type=Path, required=True, help="JSON file matching the experiment API payload.")
+    sweep.add_argument("--layers", type=int, nargs="+", required=True, help="Layer values to run.")
+    sweep.add_argument("--coefficients", type=float, nargs="+", required=True, help="Coefficient values to run.")
+    sweep.add_argument("--plan-only", action="store_true", help="Print the planned grid without loading a model.")
+    sweep.add_argument("--no-save", action="store_true", help="Run without writing result/vector/sweep artifacts.")
+    sweep.set_defaults(func=command_sweep)
 
     validate_model = subparsers.add_parser("validate-model", help="Report registry gating for a model id.")
     validate_model.add_argument("model_id")

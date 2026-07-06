@@ -126,7 +126,7 @@ Every phase should be reviewed through these lenses before being called done:
 The local runtime remains the advanced execution path:
 
 - Python package provides steering primitives.
-- FastAPI exposes model registry, runtime status, docs, vector build, experiment run, sweep planning, and artifact readback.
+- FastAPI exposes model registry, runtime status, docs, vector build, experiment run, sweep planning/execution, and artifact readback.
 - React workbench proxies `/api/*` to the local FastAPI server in development.
 - Local model weights and generated artifacts stay out of git.
 
@@ -383,7 +383,7 @@ Deliverables:
   - output metrics
   - environment summary
 - Prompt-only control run support. Implemented in API/script artifacts and the workbench comparison UI.
-- Coefficient/layer sweep execution, not only planning.
+- Coefficient/layer sweep execution, not only planning. Implemented in backend, API, and CLI with versioned sweep manifests.
 - Metrics table:
   - length delta
   - lexical overlap
@@ -406,6 +406,7 @@ Validation gates:
 
 - Unit tests for schema and metrics.
 - API tests for artifact readback.
+- API and CLI tests for sweep planning/execution contracts.
 - One local Gemma run exports a valid artifact when model weights are present.
 - No-model tests still pass in CI.
 
@@ -556,7 +557,7 @@ Exit criteria:
 ### Near-Term
 
 - Prompt-only control baseline. Implemented for experiment artifacts and the workbench.
-- Executed layer/coefficient sweeps.
+- Executed layer/coefficient sweeps. Implemented in backend, API, and CLI; visible workbench sweep controls remain a UX follow-up.
 - Artifact schema validation.
 - No-model toy mode.
 - Model hook smoke tests.

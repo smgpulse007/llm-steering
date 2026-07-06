@@ -40,7 +40,7 @@ Tracked hygiene:
 | Area | Current Status | Release Risk | Notes |
 | --- | --- | --- | --- |
 | Python package | Improved | Medium | Editable base install exposes `llm-steering`; heavy HF/API/media/notebook dependencies are split into extras. |
-| CLI | Good baseline | Medium | Product CLI now covers verify, toy demo, API serving, showcase validation/build, and model registry validation. |
+| CLI | Strong baseline | Medium | Product CLI now covers verify, toy demo, API serving, sweep plan/run, showcase validation/build, artifact validation, and model registry validation. |
 | API | Good baseline | Medium | FastAPI layer exists, but request schemas and lifecycle states need hardening. |
 | UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface and local-only run gating. |
 | Beginner education | Good baseline | Medium | Beginner lessons and a no-model toy demo exist; in-browser toy simulation remains later work. |
@@ -48,7 +48,7 @@ Tracked hygiene:
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, and frontend build are configured. |
 | Model support gating | Good baseline | Medium | Registry gates unsupported models; hook smoke-test automation is missing. |
-| Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, and CLI/API validation; run manifests and sweep artifacts still need hardening. |
+| Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, sweep manifests, and CLI/API validation; richer metrics still need hardening. |
 | Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
 
 ## Gap Backlog
@@ -83,6 +83,8 @@ Tracked hygiene:
 ### P1: Should Fix For Strong Release
 
 1. Add real sweep execution and sweep artifacts.
+   - Status: implemented in backend, API, and CLI.
+   - Evidence: `run_sweep()` writes versioned sweep manifests, `POST /api/experiments/sweep/run` executes a grid, and `llm-steering sweep` can plan or run a JSON request.
 2. Add download/copy buttons in the UI.
    - Status: implemented for output panes and artifact rail.
    - Evidence: baseline, prompt-only, and steered panes expose rendered/raw copy plus Markdown download; the artifact rail exposes result JSON and vector metadata copy/download actions.
@@ -98,6 +100,7 @@ Completed follow-up:
 - Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
 - Local docs now expose table-of-contents metadata and hashable section links in the API and static Pages fallback.
 - Output and artifact copy/download actions are available in the workbench UI.
+- Layer/coefficient sweeps can execute through the backend/API/CLI and produce versioned sweep manifests.
 
 ### P2: Later Differentiators
 
@@ -170,7 +173,7 @@ Gaps:
 
 - Large Markdown chunk warning.
 - Run lifecycle is still too coarse.
-- Sweep execution remains plan-only.
+- Visual workbench sweep controls are still minimal.
 
 ### `src/llm_steering/api.py`
 
@@ -179,11 +182,12 @@ Strengths:
 - Core routes exist.
 - Unsupported models are gated.
 - Local docs can be served.
+- Sweep execution route writes versioned manifests.
 
 Gaps:
 
 - Schemas are plain dicts rather than full Pydantic models.
-- Sweep route only plans.
+- Visual workbench still needs a first-class sweep execution panel.
 - Hook smoke-test endpoint is missing.
 - Error payloads are not yet product-level.
 

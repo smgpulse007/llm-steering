@@ -1,0 +1,21 @@
+{
+  "model_id": "google/gemma-4-E2B-it",
+  "system_prompt": "You are a helpful assistant.",
+  "user_prompt": "Draft a response to a customer whose replacement part arrived late.",
+  "prompt_pairs": [
+    {
+      "positive": "Write a calm, accountable reply with clear next steps and reassurance.",
+      "negative": "Write a curt, defensive reply with vague language and no next step."
+    }
+  ],
+  "layer": 18,
+  "coefficient": 1.5,
+  "apply_to": "last_token",
+  "hook_stage": "post",
+  "normalize": true,
+  "max_new_tokens": 256,
+  "do_sample": false,
+  "temperature": 0.8,
+  "top_p": 0.95,
+  "top_k": 64
+}

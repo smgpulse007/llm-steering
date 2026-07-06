@@ -122,6 +122,7 @@ The API must expose:
 - `POST /api/vectors/build`
 - `POST /api/experiments/run`
 - `POST /api/experiments/sweep`
+- `POST /api/experiments/sweep/run`
 - `GET /api/experiments/{experiment_id}`
 
 Experiment results must include:
@@ -134,6 +135,16 @@ Experiment results must include:
 - baseline-to-steered, baseline-to-prompt-control, and prompt-control-to-steered delta metrics
 - vector artifact path
 - result artifact path
+- reproduction command
+
+Sweep results must include:
+
+- sweep id and schema metadata
+- base request and model support status
+- layer and coefficient axes
+- one run summary per executed grid cell
+- per-run diagnostics and output deltas
+- sweep artifact path
 - reproduction command
 
 ## Model Support Roadmap
