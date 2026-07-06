@@ -24,6 +24,8 @@ The Console must let a user:
 - inspect baseline, prompt-only control, and activation-steered outputs as rendered Markdown
 - inspect automatic diff highlights without losing rendered Markdown
 - view diagnostics, artifacts, and logs
+- copy rendered text, copy raw Markdown, and download raw Markdown from each output pane
+- copy/download result JSON and vector metadata from the artifact rail
 
 ### Model Picker
 
@@ -63,6 +65,8 @@ Model responses must render like a normal Markdown preview:
 - bold/italic formatting
 
 Diff highlighting must not replace the main rendered answer. It should be a secondary view or panel that helps compare prompt-only control output with activation-steered output. Auto diff should remain available for long responses by falling back from exact word-level diffing to line-level or streaming diffing instead of skipping the comparison.
+
+Each output pane must expose copy rendered, copy raw, and download raw Markdown actions. These controls must fit within the pane on mobile and desktop without forcing horizontal scroll.
 
 ## Control Knob Explanations
 

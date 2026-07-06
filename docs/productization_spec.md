@@ -334,7 +334,7 @@ Deliverables:
   - saving artifact
   - failed with actionable message
 - Run history panel.
-- Copy/download buttons for outputs and artifacts.
+- Copy/download buttons for outputs and artifacts. Implemented for rendered/raw output copy, Markdown downloads, result JSON, and vector metadata JSON.
 - Better sweep planning UI.
 - Per-run interpretation panel explaining what changed and what did not.
 - Responsive review across desktop and mobile.

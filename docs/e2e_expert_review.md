@@ -37,10 +37,10 @@ Resolution:
 - GFM, tables, math, KaTeX, and syntax highlighting are enabled.
 - Output panes show rendered Markdown first.
 - Automatic diff is a secondary expandable panel instead of replacing the answer.
+- Output panes provide copy actions for rendered text and raw Markdown plus raw Markdown download.
 
 Remaining work:
 
-- Add copy buttons for rendered and raw output.
 - Add optional source/raw tab per pane.
 
 ### Medium: model picker/cards were layout fragile
@@ -117,10 +117,10 @@ Resolution:
 - Frontend API client includes `fetchExperiment`.
 - Console rail can fetch and display the saved JSON artifact for the current experiment.
 - Backend tests cover experiment artifact readback.
+- Console rail can copy/download result JSON and compact vector metadata JSON.
 
 Remaining work:
 
-- Add download buttons for JSON and vector metadata.
 - Add vector metadata sidecar if tensor files are emitted.
 
 ### Medium: local docs could silently drift

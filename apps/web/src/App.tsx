@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -8,6 +8,8 @@ import {
   BrainCircuit,
   CheckCircle2,
   ChevronRight,
+  Copy,
+  Download,
   FlaskConical,
   FunctionSquare,
   Gauge,
@@ -79,6 +81,66 @@ function replaceHash(hash: string) {
   if (window.location.hash !== hash) {
     window.history.replaceState(null, "", hash);
   }
+}
+
+function safeFileName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "llm-steering";
+}
+
+async function copyTextToClipboard(text: string): Promise<boolean> {
+  if (!text.trim() || typeof window === "undefined") return false;
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+  return copied;
+}
+
+function downloadTextFile(filename: string, text: string, mimeType = "text/plain;charset=utf-8") {
+  if (typeof window === "undefined") return;
+  const blob = new Blob([text], { type: mimeType });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
+}
+
+function vectorMetadataJson(result: ExperimentResult, payload: ExperimentPayload): string {
+  return JSON.stringify(
+    {
+      artifact_kind: "vector_metadata",
+      experiment_id: result.experiment_id,
+      created_at_utc: result.created_at_utc,
+      model_id: payload.model_id,
+      vector_path: result.vector_path,
+      layer: payload.layer,
+      coefficient: payload.coefficient,
+      hook_stage: payload.hook_stage,
+      apply_to: payload.apply_to,
+      normalize: payload.normalize,
+      prompt_pair_count: payload.prompt_pairs.length,
+      prompt_control: result.prompt_control,
+      diagnostics: result.diagnostics,
+      artifact_path: result.artifact_path,
+      reproduce_command: result.reproduce_command
+    },
+    null,
+    2
+  );
 }
 
 const initialPayload: ExperimentPayload = {
@@ -961,6 +1023,22 @@ function ConsoleRail({
   artifactPreview: string;
   onFetchArtifact: () => void;
 }) {
+  const [artifactAction, setArtifactAction] = useState("");
+  const artifactBaseName = safeFileName(result.experiment_id);
+  const artifactJson =
+    artifactPreview.trim().startsWith("{") ? artifactPreview : JSON.stringify(result, null, 2);
+  const vectorJson = vectorMetadataJson(result, payload);
+
+  async function handleCopyArtifact(text: string, label: string) {
+    const copied = await copyTextToClipboard(text);
+    setArtifactAction(copied ? `${label} copied` : `${label} unavailable`);
+  }
+
+  function handleDownloadArtifact(filename: string, text: string) {
+    downloadTextFile(filename, text, "application/json;charset=utf-8");
+    setArtifactAction(`${filename} downloaded`);
+  }
+
   return (
     <aside className="right-rail">
       <section className="glass-panel">
@@ -1013,6 +1091,27 @@ function ConsoleRail({
         <button className="secondary-button compact" onClick={onFetchArtifact}>
           <Braces size={15} /> Fetch JSON artifact
         </button>
+        <div className="artifact-actions" aria-label="Artifact export actions">
+          <button className="icon-action" onClick={() => handleCopyArtifact(artifactJson, "Result JSON")}>
+            <Copy size={15} /> Copy JSON
+          </button>
+          <button
+            className="icon-action"
+            onClick={() => handleDownloadArtifact(`${artifactBaseName}.experiment.json`, artifactJson)}
+          >
+            <Download size={15} /> Download JSON
+          </button>
+          <button className="icon-action" onClick={() => handleCopyArtifact(vectorJson, "Vector metadata")}>
+            <Copy size={15} /> Copy vector
+          </button>
+          <button
+            className="icon-action"
+            onClick={() => handleDownloadArtifact(`${artifactBaseName}.vector-metadata.json`, vectorJson)}
+          >
+            <Download size={15} /> Download vector
+          </button>
+        </div>
+        {artifactAction ? <p className="action-status">{artifactAction}</p> : null}
         {artifactPreview ? <pre className="artifact-json">{artifactPreview}</pre> : null}
       </section>
 
@@ -1213,6 +1312,8 @@ function OutputPane({
   diffResult: DiffResult | null;
   side: "left" | "right";
 }) {
+  const renderedRef = useRef<HTMLDivElement>(null);
+  const [outputAction, setOutputAction] = useState("");
   const diffContent = diffResult ? diffResult[side] : null;
   const diffLabel =
     diffResult?.mode === "exact"
@@ -1220,13 +1321,45 @@ function OutputPane({
       : diffResult?.mode === "line"
         ? "Long response line-level diff"
         : "Long response streaming diff";
+  const fileBaseName = safeFileName(title.toLowerCase());
+
+  async function handleCopyRendered() {
+    const renderedText = renderedRef.current?.innerText ?? text;
+    const copied = await copyTextToClipboard(renderedText);
+    setOutputAction(copied ? "Rendered text copied" : "Copy unavailable");
+  }
+
+  async function handleCopyRaw() {
+    const copied = await copyTextToClipboard(text);
+    setOutputAction(copied ? "Raw Markdown copied" : "Copy unavailable");
+  }
+
+  function handleDownloadRaw() {
+    downloadTextFile(`${fileBaseName}.md`, text);
+    setOutputAction(`${fileBaseName}.md downloaded`);
+  }
+
   return (
     <section className={`glass-panel output-pane ${tone}`}>
       <div className="panel-title">
         {tone === "steered" ? <Sparkles size={18} /> : tone === "prompt" ? <ScrollText size={18} /> : <AlertTriangle size={18} />}
         <span>{title}</span>
       </div>
-      <MarkdownOutput text={text} />
+      <div className="output-actions" aria-label={`${title} export actions`}>
+        <button className="icon-action" onClick={handleCopyRendered}>
+          <Copy size={15} /> Copy rendered
+        </button>
+        <button className="icon-action" onClick={handleCopyRaw}>
+          <Copy size={15} /> Copy raw
+        </button>
+        <button className="icon-action" onClick={handleDownloadRaw}>
+          <Download size={15} /> Download
+        </button>
+      </div>
+      {outputAction ? <p className="action-status">{outputAction}</p> : null}
+      <div ref={renderedRef}>
+        <MarkdownOutput text={text} />
+      </div>
       {diffContent ? (
         <details className="diff-panel" open>
           <summary>Automatic diff highlights</summary>

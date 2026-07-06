@@ -84,6 +84,8 @@ Tracked hygiene:
 
 1. Add real sweep execution and sweep artifacts.
 2. Add download/copy buttons in the UI.
+   - Status: implemented for output panes and artifact rail.
+   - Evidence: baseline, prompt-only, and steered panes expose rendered/raw copy plus Markdown download; the artifact rail exposes result JSON and vector metadata copy/download actions.
 3. Add hook smoke-test CLI/API.
 4. Add docs path tests for future lesson files.
    - Status: implemented for indexed docs and section outlines.
@@ -95,6 +97,7 @@ Completed follow-up:
 
 - Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
 - Local docs now expose table-of-contents metadata and hashable section links in the API and static Pages fallback.
+- Output and artifact copy/download actions are available in the workbench UI.
 
 ### P2: Later Differentiators
 
@@ -161,12 +164,13 @@ Strengths:
 - Markdown rendering and safe diff logic exist.
 - Public docs reader has document groups, an in-document outline, and stable section links.
 - Static Pages mode bundles the same docs inventory as the local API for public browsing.
+- Output panes and artifact rail include copy/download actions for review handoff.
 
 Gaps:
 
 - Large Markdown chunk warning.
 - Run lifecycle is still too coarse.
-- Copy/download actions are still missing for outputs and artifacts.
+- Sweep execution remains plan-only.
 
 ### `src/llm_steering/api.py`
 

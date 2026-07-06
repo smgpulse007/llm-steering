@@ -80,6 +80,7 @@ The repo now includes a functional steering workbench shell for the open-source 
 - hybrid word/line diff highlighting for prompt-only vs activation-steered output
 - vector diagnostics and reliability labels
 - separate explainability tab with math, architecture flow, research trail, and model support roadmap
+- copy/download actions for rendered outputs, raw Markdown, result JSON, and vector metadata
 - artifact drawer with reproducible command metadata
 - safety gating for DiffusionGemma, Qwen3.6, and Qwen3-Coder-Next until validation passes
 

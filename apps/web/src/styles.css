@@ -420,6 +420,49 @@ textarea {
   margin-top: 10px;
 }
 
+.output-actions,
+.artifact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.artifact-actions {
+  margin-top: 10px;
+}
+
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #dbe8e4;
+  padding: 6px 9px;
+  font-size: 0.78rem;
+  font-weight: 760;
+  overflow-wrap: anywhere;
+}
+
+.icon-action:hover,
+.icon-action:focus-visible {
+  border-color: rgba(157, 240, 200, 0.5);
+  color: #f7fbf8;
+  outline: none;
+}
+
+.action-status {
+  margin: -4px 0 12px;
+  color: #9ac3bd;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
 .toggle-row {
   display: inline-flex;
   grid-template-columns: none;
