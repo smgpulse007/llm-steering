@@ -53,7 +53,7 @@ Typical users include:
 The current repository supports:
 
 - a no-model toy activation-steering demo for first-time learners
-- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering sweep`, `llm-steering showcase`, `llm-steering artifacts`, and `llm-steering validate-model`
+- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering sweep`, `llm-steering hook-smoke`, `llm-steering showcase`, `llm-steering artifacts`, and `llm-steering validate-model`
 - local Hugging Face loading for `google/gemma-4-E2B-it`
 - a registry-backed FastAPI workbench API for model support status, runtime settings, and gated experiment runs
 - a Vite + React + TypeScript workbench UI under `apps/web`
@@ -65,6 +65,7 @@ The current repository supports:
 - token targeting for either `last_token` or `all_tokens`
 - compact JSON artifact generation for public demos
 - executable layer/coefficient sweeps with versioned sweep manifests and workbench controls
+- no-load and loaded-model hook smoke-test reports for model validation
 - optional Ollama-vs-HF runtime baseline comparison
 
 ## Steering workbench UI
@@ -344,6 +345,15 @@ The repo already supports several common decoder-layer layouts through `LAYER_PA
 
 The model registry that drives the workbench lives in `src/llm_steering/model_registry.py`. Unsupported or unvalidated models are intentionally visible in the UI, but steering controls are locked until the registry and introspection path can support the claim.
 
+To validate a model adapter, start with the no-load report and then run the live hook probe only when the model weights are locally available:
+
+```powershell
+llm-steering hook-smoke google/gemma-4-E2B-it
+llm-steering hook-smoke google/gemma-4-E2B-it --load-model --layer 18
+```
+
+The live hook smoke path checks pre-hooks and post-hooks across `last_token` and `all_tokens` scopes. A passed smoke test is required before promoting additional models to steering-ready status.
+
 ## Quick start
 
 ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
@@ -364,6 +374,7 @@ llm-steering demo --toy --json
 llm-steering showcase validate
 llm-steering artifacts validate
 llm-steering sweep --request .\examples\experiment_request.json --layers 12 18 --coefficients 0.5 1.0 --plan-only
+llm-steering hook-smoke google/gemma-4-E2B-it
 ```
 
 The toy demo is explicitly synthetic. It explains steering-vector mechanics with named behavior features, not real transformer hidden states.

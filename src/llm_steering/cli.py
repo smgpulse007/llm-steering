@@ -175,6 +175,21 @@ def command_validate_model(args: argparse.Namespace) -> int:
     return 0 if report["steering_ready_by_registry"] else 1
 
 
+def command_hook_smoke(args: argparse.Namespace) -> int:
+    from .introspection import run_hook_smoke_test
+
+    report = run_hook_smoke_test(
+        args.model_id,
+        load_model=args.load_model,
+        layer_index=args.layer,
+        system_prompt=args.system_prompt,
+        user_prompt=args.user_prompt,
+    )
+    payload = report.to_dict()
+    _print_json(payload)
+    return 0 if payload["status"] in {"passed", "passed_needs_registry_update", "not_run"} else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="llm-steering",
@@ -225,6 +240,14 @@ def build_parser() -> argparse.ArgumentParser:
     validate_model = subparsers.add_parser("validate-model", help="Report registry gating for a model id.")
     validate_model.add_argument("model_id")
     validate_model.set_defaults(func=command_validate_model)
+
+    hook_smoke = subparsers.add_parser("hook-smoke", help="Run or plan pre/post steering hook smoke checks.")
+    hook_smoke.add_argument("model_id")
+    hook_smoke.add_argument("--load-model", action="store_true", help="Load the model and run live hook probes.")
+    hook_smoke.add_argument("--layer", type=int, default=None, help="Optional explicit layer index to probe.")
+    hook_smoke.add_argument("--system-prompt", default="")
+    hook_smoke.add_argument("--user-prompt", default="Reply with one short sentence.")
+    hook_smoke.set_defaults(func=command_hook_smoke)
 
     return parser
 

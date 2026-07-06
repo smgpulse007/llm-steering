@@ -88,6 +88,7 @@ Recommended endpoints:
 
 - `GET /api/models`
 - `POST /api/models/introspect`
+- `POST /api/models/hook-smoke`
 - `POST /api/vectors/build`
 - `POST /api/experiments/run`
 - `POST /api/experiments/sweep`
@@ -142,7 +143,7 @@ Start with introspection and adapter work:
 - Confirm hidden states are available.
 - Confirm layer paths for `qwen3_5`, `qwen3_5_moe`, and `qwen3_next`.
 - Add layer path candidates only after verifying model structure.
-- Run a hook smoke test before enabling steering controls.
+- Run `llm-steering hook-smoke <model-id> --load-model` before enabling steering controls.
 - Prefer endpoint/vLLM/SGLang mode for giant models if direct in-process loading is not practical.
 
 ## UI requirements

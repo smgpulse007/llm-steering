@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Callable, Iterable, Sequence
 
 import torch
 import torch.nn.functional as F
@@ -193,10 +193,12 @@ def _apply_direction(hidden: torch.Tensor, direction: torch.Tensor, apply_to: st
     )
 
 
-def _make_post_addition_hook(direction: torch.Tensor, apply_to: str) -> Any:
+def _make_post_addition_hook(direction: torch.Tensor, apply_to: str, on_apply: Callable[[], None] | None = None) -> Any:
     def hook(_module: Any, _inputs: Any, output: Any) -> Any:
         hidden, tail = _unpack_layer_output(output)
         updated = _apply_direction(hidden, direction, apply_to)
+        if on_apply is not None:
+            on_apply()
 
         if tail is None:
             return updated
@@ -205,16 +207,20 @@ def _make_post_addition_hook(direction: torch.Tensor, apply_to: str) -> Any:
     return hook
 
 
-def _make_pre_addition_hook(direction: torch.Tensor, apply_to: str) -> Any:
+def _make_pre_addition_hook(direction: torch.Tensor, apply_to: str, on_apply: Callable[[], None] | None = None) -> Any:
     def hook(_module: Any, args: tuple[Any, ...], kwargs: dict[str, Any]) -> tuple[tuple[Any, ...], dict[str, Any]]:
         if args and isinstance(args[0], torch.Tensor):
             updated_hidden = _apply_direction(args[0], direction, apply_to)
+            if on_apply is not None:
+                on_apply()
             return (updated_hidden, *args[1:]), kwargs
 
         hidden_states = kwargs.get("hidden_states")
         if isinstance(hidden_states, torch.Tensor):
             updated_kwargs = dict(kwargs)
             updated_kwargs["hidden_states"] = _apply_direction(hidden_states, direction, apply_to)
+            if on_apply is not None:
+                on_apply()
             return args, updated_kwargs
 
         raise TypeError("Could not locate the hidden-states tensor for the steering pre-hook.")
@@ -230,16 +236,17 @@ def steering_hook(
     direction: torch.Tensor,
     apply_to: str = "last_token",
     hook_stage: str = "post",
+    on_apply: Callable[[], None] | None = None,
 ):
     layers = locate_transformer_layers(model)
     if layer_index < 0 or layer_index >= len(layers):
         raise IndexError(f"Layer index {layer_index} is out of bounds for {len(layers)} layers.")
 
     if hook_stage == "post":
-        handle = layers[layer_index].register_forward_hook(_make_post_addition_hook(direction, apply_to))
+        handle = layers[layer_index].register_forward_hook(_make_post_addition_hook(direction, apply_to, on_apply))
     elif hook_stage == "pre":
         handle = layers[layer_index].register_forward_pre_hook(
-            _make_pre_addition_hook(direction, apply_to),
+            _make_pre_addition_hook(direction, apply_to, on_apply),
             with_kwargs=True,
         )
     else:

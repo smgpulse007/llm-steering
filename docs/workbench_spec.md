@@ -117,6 +117,7 @@ The API must expose:
 
 - `GET /api/models`
 - `POST /api/models/introspect`
+- `POST /api/models/hook-smoke`
 - `GET /api/runtime/status`
 - `GET /api/docs`
 - `GET /api/docs/{doc_id}` with `{ doc, content, sections }`
@@ -147,6 +148,15 @@ Sweep results must include:
 - per-run diagnostics and output deltas
 - sweep artifact path
 - reproduction command
+
+Hook smoke reports must include:
+
+- registry status and steering-ready flag
+- no-load vs loaded-model mode
+- selected layer and layer count when loaded
+- one check per hook stage and token scope
+- hook-fired and pass/fail status
+- warnings and reproduction command
 
 ## Model Support Roadmap
 

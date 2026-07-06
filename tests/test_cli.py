@@ -16,6 +16,7 @@ def test_cli_help_lists_product_commands(capsys) -> None:
     assert "demo" in output
     assert "showcase" in output
     assert "sweep" in output
+    assert "hook-smoke" in output
 
 
 def test_cli_verify_no_model(capsys) -> None:
@@ -48,6 +49,14 @@ def test_cli_api_serves_packaged_fastapi_app(monkeypatch) -> None:
         "port": 8123,
         "reload": True,
     }
+
+
+def test_cli_hook_smoke_defaults_to_no_load(capsys) -> None:
+    assert main(["hook-smoke", "google/gemma-4-E2B-it"]) == 0
+    output = capsys.readouterr().out
+    assert '"status": "not_run"' in output
+    assert '"mode": "registry_only"' in output
+    assert "--load-model" in output
 
 
 def test_cli_sweep_plan_only(tmp_path, capsys) -> None:

@@ -30,6 +30,17 @@ def test_api_introspection_returns_generation_only_gate() -> None:
     assert payload["warnings"]
 
 
+def test_api_hook_smoke_defaults_to_registry_only() -> None:
+    client = TestClient(create_app())
+    response = client.post("/api/models/hook-smoke", json={"model_id": "google/gemma-4-E2B-it"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "not_run"
+    assert payload["mode"] == "registry_only"
+    assert payload["checks"] == []
+
+
 def test_api_sweep_returns_layer_coefficient_plan() -> None:
     client = TestClient(create_app())
     response = client.post(

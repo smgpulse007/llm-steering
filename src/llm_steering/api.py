@@ -22,7 +22,7 @@ from .experiments import (
     run_sweep,
     sweep_plan,
 )
-from .introspection import registry_only_report
+from .introspection import registry_only_report, run_hook_smoke_test
 from .model_registry import list_model_dicts
 
 
@@ -43,6 +43,23 @@ def create_app() -> Any:
             return registry_only_report(model_id).to_dict()
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/models/hook-smoke")
+    def api_hook_smoke(payload: dict[str, Any]) -> dict[str, object]:
+        try:
+            model_id = str(payload["model_id"])
+            layer_index = payload.get("layer")
+            return run_hook_smoke_test(
+                model_id,
+                load_model=bool(payload.get("load_model", False)),
+                layer_index=int(layer_index) if layer_index is not None else None,
+                system_prompt=str(payload.get("system_prompt", "")),
+                user_prompt=str(payload.get("user_prompt", "Reply with one short sentence.")),
+            ).to_dict()
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (RuntimeError, ValueError, IndexError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.get("/api/runtime/status")
     def api_runtime_status() -> dict[str, object]:

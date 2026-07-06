@@ -93,7 +93,7 @@ Resolution:
 
 Remaining work:
 
-- Add a real hook smoke-test endpoint before promoting any model to supported.
+- Use the hook smoke-test CLI/API report before promoting any model to supported.
 
 ### Medium: request validation was too loose
 

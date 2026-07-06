@@ -430,6 +430,7 @@ Deliverables:
   - attach post-hook
   - run generation
 - Hook smoke-test endpoint/CLI.
+- Implemented as `llm-steering hook-smoke` and `POST /api/models/hook-smoke`; no-load reports are safe for CI, and `--load-model` runs pre/post probes across `last_token` and `all_tokens`.
 - Model validation report artifact.
 - Support promotion checklist.
 - Initial validation target order:
@@ -457,6 +458,7 @@ Validation gates for promoting a model:
 - Transformer layer discovery succeeds.
 - Pre-hook smoke test passes.
 - Post-hook smoke test passes.
+- Live hook smoke report passes for both `last_token` and `all_tokens` scopes.
 - Short baseline-vs-steered artifact exports.
 - README and UI support matrix are updated.
 
@@ -560,7 +562,7 @@ Exit criteria:
 - Executed layer/coefficient sweeps. Implemented in backend, API, CLI, and the workbench sweep panel.
 - Artifact schema validation.
 - No-model toy mode.
-- Model hook smoke tests.
+- Model hook smoke tests. CLI/API report path implemented; per-model live evidence is still required before promotions.
 - Better output metrics.
 
 ### Later
