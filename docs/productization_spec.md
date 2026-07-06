@@ -1,9 +1,9 @@
 # llm-steering Open Source Productization Spec
 
-Status: implementation contract with P0 productization slice applied  
-Branch: `codex/open-source-productization-plan`  
-Date: 2026-07-05  
-Owner: smgpulse007  
+Status: implementation contract with productization and docs-first slices applied
+Branch: `codex/docs-first-pages`
+Date: 2026-07-05
+Owner: smgpulse007
 
 ## 1. Objective
 
@@ -26,7 +26,8 @@ The repo already contains meaningful product surface:
 - Hugging Face runtime integration for local hidden-state access.
 - FastAPI API in `src/llm_steering/api.py`.
 - React/Vite workbench under `apps/web`.
-- Local documentation rendered through the API.
+- Local documentation rendered through the API and static Pages fallback.
+- Docs reader with grouped documents, table-of-contents extraction, and hashable section links.
 - Public GIF/JSON showcase artifacts under `docs/assets` and `docs/showcase`.
 - Research archive under `research`.
 - GitHub Actions CI for Python tests.
@@ -34,14 +35,14 @@ The repo already contains meaningful product surface:
 Local validation on 2026-07-05:
 
 - `.\.venv\Scripts\python.exe --version`: Python 3.13.1
-- `.\.venv\Scripts\python.exe -m pytest -q`: 34 tests passed after the productization slice
+- `.\.venv\Scripts\python.exe -m pytest`: 43 tests passed after the docs-outline slice
 - `cd apps/web; npm.cmd run build`: production build passed
 - `cd apps/web; npm.cmd run build:pages`: Pages production build passed with `/llm-steering/` asset base
 - `.\.venv\Scripts\python.exe -m llm_steering.cli verify --no-model`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli demo --toy --json`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli showcase validate`: passed
 - Frontend build warning: Markdown chunk is larger than 500 kB after minification; this is a later code-splitting task
-- GitHub Pages is not enabled yet for `smgpulse007/llm-steering`
+- GitHub Pages workflow and static build exist; live action status should be rechecked after this branch is pushed or merged
 
 ## 3. Product Definition
 
@@ -284,6 +285,8 @@ Deliverables:
 - Pages build workflow.
 - Vite `base` configured for `/llm-steering/`.
 - Static site mode that uses checked-in showcase JSON/GIFs.
+- Public docs reader with grouped documents, section outline, and hashable section links.
+- Static Pages docs bundle that matches the local API docs inventory.
 - Home page with:
   - project thesis
   - beginner path entry
@@ -308,6 +311,7 @@ Validation gates:
 - Inspect built asset paths for `/llm-steering/`.
 - GitHub Actions Pages deploy succeeds.
 - Public URL loads without API.
+- `#docs/<doc_id>/<section_id>` links open the selected document and scroll to the section.
 
 Stop conditions:
 
@@ -484,11 +488,13 @@ Likely files:
 - `research/verified_sources.json`
 - `src/llm_steering/docs_index.py`
 - `apps/web/src/lib/lessons.ts`
+- `apps/web/src/lib/markdown.tsx`
 
 Validation gates:
 
 - Docs index tests fetch every lesson.
-- Static site renders every lesson.
+- Docs index tests require every indexed document to expose section metadata.
+- Static site renders every lesson and research note included in the API docs index.
 - No unsupported claim lacks a source or caveat.
 
 Exit criteria:

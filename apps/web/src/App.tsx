@@ -41,6 +41,7 @@ import type {
   IntrospectionReport,
   LocalDoc,
   LocalDocContent,
+  LocalDocSection,
   ModelRegistryEntry,
   RuntimeStatus
 } from "./lib/types";
@@ -56,12 +57,12 @@ const docCategoryLabels: Record<string, string> = {
   research: "Research notes"
 };
 
-function readHashRoute(): { activeTab?: ActiveTab; explainTab?: ExplainTab; docId?: string } {
+function readHashRoute(): { activeTab?: ActiveTab; explainTab?: ExplainTab; docId?: string; docSectionId?: string } {
   if (typeof window === "undefined") return {};
   const hash = window.location.hash.replace(/^#/, "");
-  const [section, value] = hash.split("/");
+  const [section, value, docSectionId] = hash.split("/");
   if (section === "docs") {
-    return { activeTab: "learn", docId: value || DEFAULT_DOC_ID };
+    return { activeTab: "learn", docId: value || DEFAULT_DOC_ID, docSectionId };
   }
   if (section === "workbench") {
     return { activeTab: "console" };
@@ -256,6 +257,7 @@ export function App() {
   const [autoDiff, setAutoDiff] = useState(true);
   const [docs, setDocs] = useState<LocalDoc[]>([]);
   const [selectedDocId, setSelectedDocId] = useState(initialRoute.docId ?? DEFAULT_DOC_ID);
+  const [selectedDocSectionId, setSelectedDocSectionId] = useState(initialRoute.docSectionId ?? "");
   const [docContent, setDocContent] = useState<LocalDocContent | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const [artifactPreview, setArtifactPreview] = useState("");
@@ -266,6 +268,7 @@ export function App() {
       if (route.activeTab) setActiveTab(route.activeTab);
       if (route.explainTab) setExplainTab(route.explainTab);
       if (route.docId) setSelectedDocId(route.docId);
+      setSelectedDocSectionId(route.docSectionId ?? "");
     };
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
@@ -306,6 +309,16 @@ export function App() {
       .catch((error) => setLogs((current) => [`Doc load failed: ${(error as Error).message}`, ...current]));
   }, [selectedDocId]);
 
+  useEffect(() => {
+    if (!docContent || !selectedDocSectionId || docContent.doc.doc_id !== selectedDocId) return;
+    window.requestAnimationFrame(() => {
+      document.getElementById(`doc-section-${selectedDocSectionId}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  }, [docContent, selectedDocId, selectedDocSectionId]);
+
   const selectedModel = useMemo(
     () => models.find((model) => model.model_id === selectedId) ?? models[0],
     [models, selectedId]
@@ -332,15 +345,21 @@ export function App() {
     setIntrospection(null);
   }, [selectedModel]);
 
-  function selectDoc(docId: string, scroll = false) {
+  function selectDoc(docId: string, scroll = false, sectionId = "") {
     setSelectedDocId(docId);
+    setSelectedDocSectionId(sectionId);
     setActiveTab("learn");
-    replaceHash(`#docs/${docId}`);
+    replaceHash(`#docs/${docId}${sectionId ? `/${sectionId}` : ""}`);
     if (scroll) {
       window.requestAnimationFrame(() => {
         document.getElementById("docs")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
+  }
+
+  function selectAttachedDoc(docId: string, sectionId = "") {
+    setSelectedDocId(docId);
+    setSelectedDocSectionId(sectionId);
   }
 
   function openConsole() {
@@ -458,7 +477,7 @@ export function App() {
           apiMode={apiMode}
           docs={docs}
           selectedDocId={selectedDocId}
-          onSelectDoc={selectDoc}
+          onSelectDoc={(docId, sectionId) => selectDoc(docId, false, sectionId)}
           docContent={docContent}
           onOpenConsole={openConsole}
           onOpenDocs={() => selectDoc(DEFAULT_DOC_ID, true)}
@@ -703,7 +722,7 @@ export function App() {
           setExplainTab={openExplain}
           docs={docs}
           selectedDocId={selectedDocId}
-          setSelectedDocId={(docId) => selectDoc(docId)}
+          onSelectDoc={selectAttachedDoc}
           docContent={docContent}
         />
       )}
@@ -723,7 +742,7 @@ function LearningHome({
   apiMode: "checking" | "local" | "static";
   docs: LocalDoc[];
   selectedDocId: string;
-  onSelectDoc: (docId: string, scroll?: boolean) => void;
+  onSelectDoc: (docId: string, sectionId?: string) => void;
   docContent: LocalDocContent | null;
   onOpenConsole: () => void;
   onOpenDocs: () => void;
@@ -844,11 +863,12 @@ function DocsExplorer({
   title: string;
   docs: LocalDoc[];
   selectedDocId: string;
-  onSelectDoc: (docId: string) => void;
+  onSelectDoc: (docId: string, sectionId?: string) => void;
   docContent: LocalDocContent | null;
   className?: string;
 }) {
   const categories = Array.from(new Set(docs.map((doc) => doc.category)));
+  const sections = docContent?.sections ?? [];
 
   return (
     <section className={`docs-grid ${className}`} id="docs">
@@ -876,14 +896,53 @@ function DocsExplorer({
           </div>
         ))}
       </aside>
+      <DocOutline docId={selectedDocId} sections={sections} onSelectDoc={onSelectDoc} />
       <section className="glass-panel doc-reader">
         <div className="panel-title">
           <BookOpen size={18} />
           <span>{docContent?.doc.title ?? "Loading document"}</span>
         </div>
-        <MarkdownOutput text={docContent?.content ?? "Loading local documentation..."} />
+        <MarkdownOutput text={docContent?.content ?? "Loading local documentation..."} headingIdPrefix="doc-section-" />
       </section>
     </section>
+  );
+}
+
+function DocOutline({
+  docId,
+  sections,
+  onSelectDoc
+}: {
+  docId: string;
+  sections: LocalDocSection[];
+  onSelectDoc: (docId: string, sectionId?: string) => void;
+}) {
+  return (
+    <aside className="glass-panel doc-outline" aria-label="Document sections">
+      <div className="panel-title">
+        <ChevronRight size={18} />
+        <span>On This Page</span>
+      </div>
+      {sections.length ? (
+        <nav>
+          {sections.map((section) => (
+            <a
+              className={`outline-row level-${Math.min(Math.max(section.level, 1), 4)}`}
+              href={`#docs/${docId}/${section.id}`}
+              key={section.id}
+              onClick={(event) => {
+                event.preventDefault();
+                onSelectDoc(docId, section.id);
+              }}
+            >
+              {section.title}
+            </a>
+          ))}
+        </nav>
+      ) : (
+        <p className="outline-empty">Section outline will appear after the document loads.</p>
+      )}
+    </aside>
   );
 }
 
@@ -979,7 +1038,7 @@ function ExplainabilityView({
   setExplainTab,
   docs,
   selectedDocId,
-  setSelectedDocId,
+  onSelectDoc,
   docContent
 }: {
   payload: ExperimentPayload;
@@ -990,7 +1049,7 @@ function ExplainabilityView({
   setExplainTab: (tab: ExplainTab) => void;
   docs: LocalDoc[];
   selectedDocId: string;
-  setSelectedDocId: (docId: string) => void;
+  onSelectDoc: (docId: string, sectionId?: string) => void;
   docContent: LocalDocContent | null;
 }) {
   return (
@@ -1090,7 +1149,7 @@ function ExplainabilityView({
           title="Attached Local Docs"
           docs={docs}
           selectedDocId={selectedDocId}
-          onSelectDoc={setSelectedDocId}
+          onSelectDoc={onSelectDoc}
           docContent={docContent}
         />
       )}

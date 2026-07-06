@@ -11,6 +11,7 @@ import glossary from "../../../../docs/glossary.md?raw";
 import methodology from "../../../../docs/methodology.md?raw";
 import gemmaRuntime from "../../../../research/gemma4_runtime_notes.md?raw";
 import literatureReview from "../../../../research/steering_vectors_literature_review.md?raw";
+import diffusionQwenUi from "../../../../research/2026-06-14_diffusiongemma_qwen_ui_research_notes.md?raw";
 
 export const staticDocs: LocalDoc[] = [
   {
@@ -89,6 +90,13 @@ export const staticDocs: LocalDoc[] = [
     path: "research/gemma4_runtime_notes.md",
     summary: "Runtime, model-size, and deployment notes for Gemma 4 experiments.",
     category: "research"
+  },
+  {
+    doc_id: "diffusion_qwen_ui",
+    title: "DiffusionGemma/Qwen UI Research Notes",
+    path: "research/2026-06-14_diffusiongemma_qwen_ui_research_notes.md",
+    summary: "Handoff research for DiffusionGemma, Qwen3.6, Qwen3-Coder-Next, reliability, and UI direction.",
+    category: "research"
   }
 ];
 
@@ -103,13 +111,50 @@ const lessonBodies: Record<string, string> = {
   glossary,
   methodology,
   literature: literatureReview,
-  gemma_runtime: gemmaRuntime
+  gemma_runtime: gemmaRuntime,
+  diffusion_qwen_ui: diffusionQwenUi
 };
+
+export function extractMarkdownSections(content: string) {
+  const sections: Array<{ id: string; title: string; level: number }> = [];
+  const seen: Record<string, number> = {};
+  let inFence = false;
+
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+
+    const match = /^(#{1,4})\s+(.+?)\s*#*\s*$/.exec(line);
+    if (!match) continue;
+    const title = match[2]
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/[*_`~]/g, "")
+      .trim();
+    if (!title) continue;
+
+    const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+    const count = seen[base] ?? 0;
+    seen[base] = count + 1;
+    sections.push({
+      id: count ? `${base}-${count + 1}` : base,
+      title,
+      level: match[1].length
+    });
+  }
+
+  return sections;
+}
 
 export function getStaticDoc(docId: string): LocalDocContent {
   const doc = staticDocs.find((item) => item.doc_id === docId) ?? staticDocs[0];
+  const content = lessonBodies[doc.doc_id] ?? "Static documentation is not bundled for this entry.";
   return {
     doc,
-    content: lessonBodies[doc.doc_id] ?? "Static documentation is not bundled for this entry."
+    content,
+    sections: extractMarkdownSections(content)
   };
 }

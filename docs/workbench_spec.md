@@ -99,6 +99,13 @@ The UI should load local documentation through the API, not hardcoded browser fi
 
 The Markdown renderer used for model output should also render local docs.
 
+The docs reader must expose:
+
+- document groups for lessons, reference docs, and research notes
+- an "On This Page" outline extracted from Markdown headings
+- stable section ids for shareable `#docs/<doc_id>/<section_id>` links
+- static Pages fallback content and section metadata for the same public docs inventory
+
 ## API Requirements
 
 The API must expose:
@@ -107,7 +114,7 @@ The API must expose:
 - `POST /api/models/introspect`
 - `GET /api/runtime/status`
 - `GET /api/docs`
-- `GET /api/docs/{doc_id}`
+- `GET /api/docs/{doc_id}` with `{ doc, content, sections }`
 - `POST /api/vectors/build`
 - `POST /api/experiments/run`
 - `POST /api/experiments/sweep`

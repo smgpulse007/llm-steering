@@ -120,7 +120,14 @@ export type LocalDoc = {
   category: string;
 };
 
+export type LocalDocSection = {
+  id: string;
+  title: string;
+  level: number;
+};
+
 export type LocalDocContent = {
   doc: LocalDoc;
   content: string;
+  sections: LocalDocSection[];
 };

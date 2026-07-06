@@ -132,11 +132,13 @@ Resolution:
 - `src/llm_steering/docs_index.py` centralizes the local docs index.
 - API exposes `GET /api/docs` and `GET /api/docs/{doc_id}`.
 - Tests verify every indexed local doc can be fetched.
+- `src/llm_steering/docs_index.py` extracts heading sections for every document while ignoring fenced code blocks.
+- Static Pages fallback metadata in `apps/web/src/lib/lessons.ts` uses the same section-outline contract.
+- The docs reader renders an "On This Page" outline with hashable `#docs/<doc>/<section>` links.
 
 Remaining work:
 
-- Add table-of-contents extraction for long docs.
-- Add deep links to sections.
+- Track the active section while scrolling if long-form reading becomes a primary workflow.
 
 ## Model Support Guidance
 

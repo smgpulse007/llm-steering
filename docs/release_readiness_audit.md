@@ -6,7 +6,7 @@ Branch: `codex/open-source-productization-plan`
 
 ## Summary
 
-`llm-steering` has moved from a script-first local starter kit toward a productized open source release. The branch now adds an installed CLI, no-model toy onboarding, beginner lessons, structural showcase validation, expanded CI, GitHub Pages workflow scaffolding, issue/PR templates, and a static learning surface inside the React app. A later docs-first pass added a public docs reader, hashable docs links, bundled Pages media, and split Python dependency extras. Remaining gaps are mainly deeper experiment reproducibility and model-validation automation.
+`llm-steering` has moved from a script-first local starter kit toward a productized open source release. The branch now adds an installed CLI, no-model toy onboarding, beginner lessons, structural showcase validation, expanded CI, GitHub Pages workflow scaffolding, issue/PR templates, and a static learning surface inside the React app. Later docs-first passes added a public docs reader, hashable docs and section links, bundled Pages media, split Python dependency extras, and prompt-only comparison controls. Remaining gaps are mainly deeper experiment reproducibility and model-validation automation.
 
 ## Verified Current State
 
@@ -86,12 +86,15 @@ Tracked hygiene:
 2. Add download/copy buttons in the UI.
 3. Add hook smoke-test CLI/API.
 4. Add docs path tests for future lesson files.
+   - Status: implemented for indexed docs and section outlines.
+   - Evidence: API tests fetch every indexed doc and require non-empty extracted sections.
 5. Add issue templates and PR template.
 6. Add changelog and release checklist.
 
 Completed follow-up:
 
 - Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
+- Local docs now expose table-of-contents metadata and hashable section links in the API and static Pages fallback.
 
 ### P2: Later Differentiators
 
@@ -156,14 +159,14 @@ Strengths:
 - Model registry fallback.
 - API client exists.
 - Markdown rendering and safe diff logic exist.
+- Public docs reader has document groups, an in-document outline, and stable section links.
+- Static Pages mode bundles the same docs inventory as the local API for public browsing.
 
 Gaps:
 
-- Static public mode is not formalized.
-- No Pages base path.
 - Large Markdown chunk warning.
 - Run lifecycle is still too coarse.
-- Beginner learning path is not first-class.
+- Copy/download actions are still missing for outputs and artifacts.
 
 ### `src/llm_steering/api.py`
 

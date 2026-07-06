@@ -2,8 +2,19 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
+import re
 
 from .config import project_root
+
+
+@dataclass(frozen=True, slots=True)
+class LocalDocSection:
+    id: str
+    title: str
+    level: int
+
+    def to_dict(self) -> dict[str, str | int]:
+        return asdict(self)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,12 +121,60 @@ def list_local_docs() -> list[dict[str, str]]:
     return [doc.to_dict() for doc in LOCAL_DOCS]
 
 
-def get_local_doc(doc_id: str) -> tuple[LocalDoc, str]:
+_HEADING_RE = re.compile(r"^(#{1,4})\s+(.+?)\s*#*\s*$")
+_MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]+\)")
+_MARKDOWN_DECORATION_RE = re.compile(r"[*_`~]")
+_NON_SLUG_CHARS_RE = re.compile(r"[^a-z0-9]+")
+
+
+def _clean_heading(text: str) -> str:
+    heading = text.strip()
+    heading = _MARKDOWN_LINK_RE.sub(r"\1", heading)
+    heading = _MARKDOWN_DECORATION_RE.sub("", heading)
+    return heading.strip()
+
+
+def _slugify_heading(text: str, seen: dict[str, int]) -> str:
+    base = _NON_SLUG_CHARS_RE.sub("-", text.lower()).strip("-") or "section"
+    count = seen.get(base, 0)
+    seen[base] = count + 1
+    if count:
+        return f"{base}-{count + 1}"
+    return base
+
+
+def extract_markdown_sections(content: str) -> list[dict[str, str | int]]:
+    sections: list[LocalDocSection] = []
+    seen: dict[str, int] = {}
+    in_fence = False
+
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+
+        match = _HEADING_RE.match(line)
+        if not match:
+            continue
+        level = len(match.group(1))
+        title = _clean_heading(match.group(2))
+        if not title:
+            continue
+        sections.append(LocalDocSection(id=_slugify_heading(title, seen), title=title, level=level))
+
+    return [section.to_dict() for section in sections]
+
+
+def get_local_doc(doc_id: str) -> tuple[LocalDoc, str, list[dict[str, str | int]]]:
     for doc in LOCAL_DOCS:
         if doc.doc_id == doc_id:
             doc_path = (project_root() / Path(doc.path)).resolve()
             root = project_root().resolve()
             if root not in doc_path.parents and doc_path != root:
                 raise ValueError(f"Document path escapes project root: {doc.path}")
-            return doc, doc_path.read_text(encoding="utf-8")
+            content = doc_path.read_text(encoding="utf-8")
+            return doc, content, extract_markdown_sections(content)
     raise KeyError(f"Unknown document id: {doc_id}")

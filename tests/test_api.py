@@ -96,6 +96,7 @@ def test_api_docs_exposes_local_methodology() -> None:
     doc = client.get("/api/docs/methodology")
     assert doc.status_code == 200
     assert "Steering-vector math" in doc.json()["content"]
+    assert {"id": "steering-vector-math", "title": "Steering-vector math", "level": 2} in doc.json()["sections"]
 
 
 def test_all_indexed_local_docs_can_be_fetched() -> None:
@@ -105,6 +106,7 @@ def test_all_indexed_local_docs_can_be_fetched() -> None:
         assert response.status_code == 200
         assert response.json()["doc"]["path"] == local_doc.path
         assert response.json()["content"].strip()
+        assert response.json()["sections"]
 
 
 def test_api_get_experiment_reads_result_artifact() -> None:

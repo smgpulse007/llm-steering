@@ -63,8 +63,8 @@ def create_app() -> Any:
     @app.get("/api/docs/{doc_id}")
     def api_doc(doc_id: str) -> dict[str, object]:
         try:
-            doc, content = get_local_doc(doc_id)
-            return {"doc": doc.to_dict(), "content": content}
+            doc, content, sections = get_local_doc(doc_id)
+            return {"doc": doc.to_dict(), "content": content, "sections": sections}
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except (FileNotFoundError, ValueError) as exc:

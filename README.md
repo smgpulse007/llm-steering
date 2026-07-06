@@ -107,7 +107,7 @@ http://127.0.0.1:5173
 
 The UI proxies `/api/*` calls to `http://127.0.0.1:8000` during development. The workbench can display the registry without the API through a small fallback snapshot, but real experiment runs require the Python API and local model access.
 
-The GitHub Pages build runs in static mode. It teaches the beginner path and displays checked-in showcase artifacts, but it does not run the FastAPI API or generate new model outputs in the browser.
+The GitHub Pages build runs in static mode. It teaches the beginner path, renders the local docs with section outlines, and displays checked-in showcase artifacts, but it does not run the FastAPI API or generate new model outputs in the browser.
 
 ## Real starter-kit use cases
 
