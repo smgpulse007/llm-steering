@@ -9,6 +9,7 @@ import type {
   SweepPlan,
   VectorBuildResult
 } from "./types";
+import { getStaticDoc, staticDocs } from "./lessons";
 
 export const fallbackModels: ModelRegistryEntry[] = [
   {
@@ -179,10 +180,18 @@ export async function fetchExperiment(experimentId: string): Promise<ExperimentR
 }
 
 export async function fetchDocs(): Promise<LocalDoc[]> {
-  const payload = await requestJson<{ docs: LocalDoc[] }>("/api/docs");
-  return payload.docs;
+  try {
+    const payload = await requestJson<{ docs: LocalDoc[] }>("/api/docs");
+    return payload.docs;
+  } catch {
+    return staticDocs;
+  }
 }
 
 export async function fetchDoc(docId: string): Promise<LocalDocContent> {
-  return requestJson<LocalDocContent>(`/api/docs/${docId}`);
+  try {
+    return await requestJson<LocalDocContent>(`/api/docs/${docId}`);
+  } catch {
+    return getStaticDoc(docId);
+  }
 }

@@ -1,5 +1,10 @@
 # llm-steering
 
+[![CI](https://github.com/smgpulse007/llm-steering/actions/workflows/ci.yml/badge.svg)](https://github.com/smgpulse007/llm-steering/actions/workflows/ci.yml)
+[![Pages](https://github.com/smgpulse007/llm-steering/actions/workflows/pages.yml/badge.svg)](https://github.com/smgpulse007/llm-steering/actions/workflows/pages.yml)
+
+Public learning site: https://smgpulse007.github.io/llm-steering/
+
 `llm-steering` is a local-first **starter kit** for **activation steering**, **activation engineering**, and **representation engineering** on Gemma 4 and other open-source small language models (SLMs).
 
 The repo is intentionally built around a simple thesis:
@@ -47,6 +52,8 @@ Typical users include:
 
 The current repository supports:
 
+- a no-model toy activation-steering demo for first-time learners
+- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering showcase`, and `llm-steering validate-model`
 - local Hugging Face loading for `google/gemma-4-E2B-it`
 - a registry-backed FastAPI workbench API for model support status, runtime settings, and gated experiment runs
 - a Vite + React + TypeScript workbench UI under `apps/web`
@@ -81,7 +88,7 @@ The repo now includes a functional steering workbench shell for the open-source 
 Run the API:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn scripts.serve_api:app --host 127.0.0.1 --port 8000
+llm-steering api
 ```
 
 Run the UI:
@@ -99,6 +106,8 @@ http://127.0.0.1:5173
 ```
 
 The UI proxies `/api/*` calls to `http://127.0.0.1:8000` during development. The workbench can display the registry without the API through a small fallback snapshot, but real experiment runs require the Python API and local model access.
+
+The GitHub Pages build runs in static mode. It teaches the beginner path and displays checked-in showcase artifacts, but it does not run the FastAPI API or generate new model outputs in the browser.
 
 ## Real starter-kit use cases
 
@@ -335,7 +344,28 @@ The model registry that drives the workbench lives in `src/llm_steering/model_re
 
 ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 
-### 1. Clone and create a virtual environment
+### Path A: no-model beginner demo
+
+This path is for learning the mechanics before downloading model weights. It does not require Hugging Face auth, Ollama, CUDA, or a GPU.
+
+```powershell
+git clone https://github.com/smgpulse007/llm-steering.git
+cd llm-steering
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .[dev]
+llm-steering verify --no-model
+llm-steering demo --toy --json
+llm-steering showcase validate
+```
+
+The toy demo is explicitly synthetic. It explains steering-vector mechanics with named behavior features, not real transformer hidden states.
+
+### Path B: local advanced workbench
+
+Use this path when you want real Hugging Face hidden-state access and activation hooks.
+
+#### 1. Clone and create a virtual environment
 
 ```powershell
 git clone https://github.com/smgpulse007/llm-steering.git
@@ -344,13 +374,13 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Install the project
+#### 2. Install the project
 
 ```powershell
 python -m pip install -e .[dev]
 ```
 
-### 3. Configure access to Hugging Face
+#### 3. Configure access to Hugging Face
 
 Copy `.env.example` to `.env` and either:
 
@@ -359,20 +389,31 @@ Copy `.env.example` to `.env` and either:
 
 The repo does **not** ship model weights.
 
-### 4. Verify the local runtime
+#### 4. Verify the local runtime
 
 ```powershell
 python scripts/verify_gpu.py
 python -m pytest
 ```
 
-### 5. Download the default Gemma 4 checkpoint
+#### 5. Download the default Gemma 4 checkpoint
 
 ```powershell
 python scripts/download_hf_gemma4.py
 ```
 
-### 6. Run the public demo path
+#### 6. Run the local workbench
+
+```powershell
+llm-steering api
+cd apps/web
+npm install
+npm run dev
+```
+
+Then open `http://127.0.0.1:5173`.
+
+#### 7. Run the public demo path
 
 ```powershell
 python scripts/build_showcase.py --skip-ollama
@@ -385,6 +426,7 @@ If you want the optional runtime comparison too, rerun without `--skip-ollama`.
 - `src/llm_steering/` — reusable runtime, steering, and config code
 - `apps/web/` - Vite + React + TypeScript steering workbench UI
 - `scripts/` — runnable experiment, download, comparison, and showcase entry points
+- `docs/lessons/` - beginner learning path for transformer and steering concepts
 - `configs/prompt_pairs/` — prompt-pair configs used to construct steering vectors
 - `docs/` — methodology, images, and tracked showcase artifacts
 - `research/` — source-backed literature review, Gemma 4 runtime notes, DiffusionGemma/Qwen notes, and source manifests

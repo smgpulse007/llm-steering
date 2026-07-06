@@ -11,6 +11,7 @@ import {
   FlaskConical,
   FunctionSquare,
   Gauge,
+  Globe2,
   GraduationCap,
   Layers,
   Play,
@@ -33,6 +34,7 @@ import {
   runExperiment
 } from "./lib/api";
 import { steeringPresets, type SteeringPreset } from "./lib/presets";
+import { showcaseUseCases, staticSiteNotes } from "./lib/showcase";
 import type {
   ExperimentPayload,
   ExperimentResult,
@@ -191,8 +193,9 @@ export function App() {
   const [result, setResult] = useState<ExperimentResult>(demoResult);
   const [logs, setLogs] = useState<string[]>(["Workbench initialized with local fallback registry."]);
   const [busy, setBusy] = useState(false);
-  const [activeTab, setActiveTab] = useState<"console" | "explain">("console");
+  const [activeTab, setActiveTab] = useState<"learn" | "console" | "explain">("learn");
   const [explainTab, setExplainTab] = useState<"math" | "controls" | "docs" | "roadmap">("math");
+  const [apiMode, setApiMode] = useState<"checking" | "local" | "static">("checking");
   const [autoDiff, setAutoDiff] = useState(true);
   const [docs, setDocs] = useState<LocalDoc[]>([]);
   const [selectedDocId, setSelectedDocId] = useState("methodology");
@@ -208,9 +211,16 @@ export function App() {
     fetchRuntimeStatus()
       .then((status) => {
         setRuntimeStatus(status);
+        setApiMode("local");
         setLogs((current) => [`Runtime default: ${status.hf_model_id}, layer ${status.default_layer}.`, ...current]);
       })
-      .catch((error) => setLogs((current) => [`Runtime status unavailable: ${(error as Error).message}`, ...current]));
+      .catch((error) => {
+        setApiMode("static");
+        setLogs((current) => [
+          `Static mode: local API unavailable (${(error as Error).message}).`,
+          ...current
+        ]);
+      });
     fetchDocs()
       .then((items) => {
         setDocs(items);
@@ -256,6 +266,10 @@ export function App() {
   }
 
   async function handleIntrospect() {
+    if (apiMode !== "local") {
+      setLogs((current) => ["Introspection is local-only. Start the FastAPI server to inspect runtime hooks.", ...current]);
+      return;
+    }
     setBusy(true);
     try {
       const report = await introspectModel(selectedModel.model_id);
@@ -269,6 +283,10 @@ export function App() {
   }
 
   async function handleRun() {
+    if (apiMode !== "local") {
+      setLogs((current) => ["Run blocked: public Pages mode is static; start the local API for real steering.", ...current]);
+      return;
+    }
     if (!selectedModel.steering_ready) {
       setLogs((current) => [`Run blocked: ${selectedModel.steering_notes}`, ...current]);
       return;
@@ -286,6 +304,10 @@ export function App() {
   }
 
   async function handleFetchArtifact() {
+    if (apiMode !== "local") {
+      setArtifactPreview("Artifact readback is local-only. Public Pages mode displays checked-in showcase artifacts.");
+      return;
+    }
     if (result.experiment_id === "preview_not_run") {
       setArtifactPreview("Run an experiment first, then fetch the saved JSON artifact.");
       return;
@@ -308,23 +330,26 @@ export function App() {
     }));
   }
 
-  const runBlocked = !selectedModel?.steering_ready;
+  const runBlocked = apiMode !== "local" || !selectedModel?.steering_ready;
 
   return (
     <main className="app-shell">
       <section className="topbar glass-band">
         <div>
           <p className="eyebrow">activation steering workbench</p>
-          <h1>Model Steering Console</h1>
+          <h1>LLM Steering Lab</h1>
         </div>
         <div className="runtime-strip">
-          <span><Activity size={16} /> API-aware</span>
+          <span><Activity size={16} /> {apiMode === "local" ? "local API" : apiMode === "static" ? "static Pages" : "checking API"}</span>
           <span><Gauge size={16} /> {runtimeStatus?.hf_model_id ?? "HF local / served"}</span>
           <span><CheckCircle2 size={16} /> gated controls</span>
         </div>
       </section>
 
       <nav className="tabbar glass-band" aria-label="Workbench tabs">
+        <button className={activeTab === "learn" ? "active" : ""} onClick={() => setActiveTab("learn")}>
+          <Globe2 size={16} /> Learn
+        </button>
         <button className={activeTab === "console" ? "active" : ""} onClick={() => setActiveTab("console")}>
           <SlidersHorizontal size={16} /> Console
         </button>
@@ -333,7 +358,9 @@ export function App() {
         </button>
       </nav>
 
-      {activeTab === "console" ? (
+      {activeTab === "learn" ? (
+        <LearningHome apiMode={apiMode} onOpenConsole={() => setActiveTab("console")} onOpenDocs={() => setActiveTab("explain")} />
+      ) : activeTab === "console" ? (
         <section className="workspace-grid">
           <aside className="left-rail glass-panel">
             <div className="panel-title">
@@ -507,7 +534,11 @@ export function App() {
                   Auto diff
                 </label>
                 <span className={runBlocked ? "blocked-note" : "ready-note"}>
-                  {runBlocked ? "Steering locked until validation passes" : "Ready for Gemma 4 E2B experiment"}
+                  {apiMode !== "local"
+                    ? "Static Pages mode: run the local API for real experiments"
+                    : runBlocked
+                      ? "Steering locked until validation passes"
+                      : "Ready for Gemma 4 E2B experiment"}
                 </span>
               </div>
             </section>
@@ -561,6 +592,100 @@ export function App() {
         />
       )}
     </main>
+  );
+}
+
+function LearningHome({
+  apiMode,
+  onOpenConsole,
+  onOpenDocs
+}: {
+  apiMode: "checking" | "local" | "static";
+  onOpenConsole: () => void;
+  onOpenDocs: () => void;
+}) {
+  return (
+    <section className="public-home">
+      <section className="glass-panel public-intro">
+        <div>
+          <p className="eyebrow">open source activation steering lab</p>
+          <h2>Learn the basics, then run real local steering experiments.</h2>
+          <p>
+            This project teaches prompt steering, activation steering, ActAdd, prompt-pair vectors,
+            hook stages, and evaluation discipline. Public Pages mode uses checked-in artifacts; the
+            local workbench connects to FastAPI and a supported Hugging Face model.
+          </p>
+        </div>
+        <div className="public-actions">
+          <button className="primary-button" onClick={onOpenDocs}>
+            <GraduationCap size={16} /> Start Lessons
+          </button>
+          <button className="secondary-button compact" onClick={onOpenConsole}>
+            <TerminalSquare size={16} /> Open Workbench
+          </button>
+        </div>
+      </section>
+
+      <section className="public-grid">
+        <section className="glass-panel">
+          <div className="panel-title">
+            <BookOpen size={18} />
+            <span>Beginner Path</span>
+          </div>
+          <ol className="lesson-steps">
+            <li>Transformer basics: tokens, layers, hidden states, residual stream.</li>
+            <li>Prompt steering: useful baseline, but not the same as activation edits.</li>
+            <li>ActAdd: positive minus negative hidden states creates a direction.</li>
+            <li>Evaluation: compare baseline, prompt-only control, and steered output.</li>
+          </ol>
+          <pre className="command-block">python -m pip install -e .[dev]{`\n`}llm-steering demo --toy --json</pre>
+        </section>
+
+        <section className="glass-panel">
+          <div className="panel-title">
+            <FlaskConical size={18} />
+            <span>Advanced Local Path</span>
+          </div>
+          <ol className="lesson-steps">
+            <li>Configure Hugging Face access and download a supported model.</li>
+            <li>Start the FastAPI workbench API.</li>
+            <li>Run a preset or custom prompt-pair experiment.</li>
+            <li>Inspect diagnostics, diffs, and exported artifacts.</li>
+          </ol>
+          <pre className="command-block">llm-steering api{`\n`}cd apps/web && npm run dev</pre>
+          <p className={apiMode === "local" ? "ready-note" : "blocked-note"}>
+            {apiMode === "local" ? "Local API detected." : "Public/static mode detected."}
+          </p>
+        </section>
+      </section>
+
+      <section className="showcase-grid">
+        {showcaseUseCases.map((useCase) => (
+          <article className="glass-panel showcase-card" key={useCase.slug}>
+            <img src={useCase.assetUrl} alt={`${useCase.title} steering demo`} loading="lazy" />
+            <strong>{useCase.title}</strong>
+            <span>{useCase.category}</span>
+            <p>{useCase.whatToNotice}</p>
+            <details>
+              <summary>Show artifact text</summary>
+              <p><b>Prompt:</b> {useCase.userPrompt}</p>
+              <p><b>Baseline:</b> {useCase.baseline}</p>
+              <p><b>Steered:</b> {useCase.steered}</p>
+            </details>
+          </article>
+        ))}
+      </section>
+
+      <section className="glass-panel public-notes">
+        <div className="panel-title">
+          <AlertTriangle size={18} />
+          <span>Honest Support Boundaries</span>
+        </div>
+        {staticSiteNotes.map((note) => (
+          <p key={note}>{note}</p>
+        ))}
+      </section>
+    </section>
   );
 }
 

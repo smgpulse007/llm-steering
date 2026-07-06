@@ -58,6 +58,9 @@ dev = [
   "pytest>=8.0",
 ]
 
+[project.scripts]
+llm-steering = "llm_steering.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/smgpulse007/llm-steering"
 Repository = "https://github.com/smgpulse007/llm-steering"

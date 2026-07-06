@@ -20,6 +20,62 @@ class LocalDoc:
 
 LOCAL_DOCS: tuple[LocalDoc, ...] = (
     LocalDoc(
+        doc_id="lesson_transformers",
+        title="Lesson 1: Transformer Basics",
+        path="docs/lessons/01_transformers.md",
+        summary="Beginner introduction to tokens, layers, residual stream, and hidden states.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_prompt_steering",
+        title="Lesson 2: Prompt Steering",
+        path="docs/lessons/02_prompt_steering.md",
+        summary="Why prompt steering is the first baseline and how it differs from activation edits.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_activation_steering",
+        title="Lesson 3: Activation Steering",
+        path="docs/lessons/03_activation_steering.md",
+        summary="Plain-language explanation of inference-time activation edits.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_actadd",
+        title="Lesson 4: ActAdd",
+        path="docs/lessons/04_actadd.md",
+        summary="Positive/negative prompt pairs, steering vectors, and tuning knobs.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_caa",
+        title="Lesson 5: CAA-Style Mean Difference",
+        path="docs/lessons/05_caa.md",
+        summary="Using multiple contrast pairs to build more stable directions.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_evaluation",
+        title="Lesson 6: Evaluation",
+        path="docs/lessons/06_evaluation.md",
+        summary="Baseline, prompt-only control, sweeps, diagnostics, and review artifacts.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="lesson_advanced_methods",
+        title="Lesson 7: Advanced Methods",
+        path="docs/lessons/07_advanced_methods.md",
+        summary="Activation patching, SEA, SAE-guided steering, and support rules.",
+        category="lessons",
+    ),
+    LocalDoc(
+        doc_id="glossary",
+        title="Glossary",
+        path="docs/glossary.md",
+        summary="Short definitions for activation steering terms used by the repo.",
+        category="docs",
+    ),
+    LocalDoc(
         doc_id="methodology",
         title="Methodology",
         path="docs/methodology.md",
