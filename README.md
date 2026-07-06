@@ -135,6 +135,15 @@ npm run preview:pages
 
 Then open `http://127.0.0.1:4173/llm-steering/`.
 
+## Release and maintenance
+
+Release readiness is tracked in:
+
+- `docs/release_checklist.md` for branch, Pages, CI, local smoke, and model-promotion gates
+- `docs/release_readiness_audit.md` for current gaps and milestone packaging
+- `CHANGELOG.md` for user-facing changes
+- `.github/ISSUE_TEMPLATE/` and `.github/pull_request_template.md` for contributor intake
+
 ## Real starter-kit use cases
 
 The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic "vector playground."

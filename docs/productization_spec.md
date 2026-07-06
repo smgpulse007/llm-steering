@@ -32,6 +32,7 @@ The repo already contains meaningful product surface:
 - Public GIF/JSON showcase artifacts under `docs/assets` and `docs/showcase`.
 - Research archive under `research`.
 - GitHub Actions CI for Python tests.
+- Release checklist and changelog for public release handoff.
 
 Local validation on 2026-07-05:
 

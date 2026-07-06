@@ -50,7 +50,7 @@ Tracked hygiene:
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, frontend build, Pages build, and Pages asset validation are configured. |
 | Model support gating | Improved | Medium | Registry gates unsupported models, and hook smoke-test CLI/API/workbench reports now exist; live model promotion still needs per-model evidence. |
 | Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, sweep manifests, and CLI/API validation; richer metrics still need hardening. |
-| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
+| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, a docs-first Pages surface, changelog, and release checklist. |
 
 ## Gap Backlog
 
@@ -96,7 +96,11 @@ Tracked hygiene:
    - Status: implemented for indexed docs and section outlines.
    - Evidence: API tests fetch every indexed doc and require non-empty extracted sections.
 5. Add issue templates and PR template.
+   - Status: implemented.
+   - Evidence: `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/model_validation.md`, and `.github/pull_request_template.md`.
 6. Add changelog and release checklist.
+   - Status: implemented.
+   - Evidence: `CHANGELOG.md` and `docs/release_checklist.md`.
 
 Completed follow-up:
 
@@ -105,6 +109,7 @@ Completed follow-up:
 - Output and artifact copy/download actions are available in the workbench UI.
 - Layer/coefficient sweeps can execute through the backend/API/CLI/workbench and produce versioned sweep manifests.
 - Hook smoke-test reports are available through the CLI, API, and workbench model rail.
+- Issue/PR templates, changelog, and release checklist are now present for public handoff.
 
 ### P2: Later Differentiators
 
@@ -126,6 +131,7 @@ Strengths:
 - Honest limitations.
 - Useful public demo artifacts.
 - Clear support matrix.
+- Links to release checklist, readiness audit, changelog, and contributor templates.
 
 Gaps:
 
@@ -326,7 +332,7 @@ Recommended next slice after this branch lands:
 1. Verify GitHub Actions and Pages deployment after push.
 2. Set repository homepage to `https://smgpulse007.github.io/llm-steering/`.
 3. Decide whether to merge the branch into `main` immediately or open a review PR first.
-4. Add the release checklist and changelog that are still open in the P1/P8 backlog.
-5. Code-split the large Markdown chunk once the Pages/docs shape is stable.
+4. Code-split the large Markdown chunk once the Pages/docs shape is stable.
+5. Run and document a clean-environment install test.
 
 The completed slices create visible product value without waiting on model downloads or advanced research.
