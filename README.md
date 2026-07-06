@@ -140,6 +140,7 @@ Then open `http://127.0.0.1:4173/llm-steering/`.
 Release readiness is tracked in:
 
 - `docs/release_checklist.md` for branch, Pages, CI, local smoke, and model-promotion gates
+- `docs/release_validation.md` for the latest clean-runner and local closeout evidence
 - `docs/release_readiness_audit.md` for current gaps and milestone packaging
 - `CHANGELOG.md` for user-facing changes
 - `.github/ISSUE_TEMPLATE/` and `.github/pull_request_template.md` for contributor intake

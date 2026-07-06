@@ -33,6 +33,7 @@ The repo already contains meaningful product surface:
 - Research archive under `research`.
 - GitHub Actions CI for Python tests.
 - Release checklist and changelog for public release handoff.
+- Release validation snapshot with clean GitHub runner and local closeout evidence.
 
 Local validation on 2026-07-05:
 
@@ -45,6 +46,7 @@ Local validation on 2026-07-05:
 - `.\.venv\Scripts\python.exe -m llm_steering.cli demo --toy --json`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli showcase validate`: passed
 - Frontend chunk split: Markdown renderer dependencies now build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
+- Clean GitHub runner validation: `ci` run `28793007839` passed on branch `codex/docs-first-pages`
 - GitHub Pages workflow and static build exist; live action status should be rechecked after this branch is pushed or merged
 
 ## 3. Product Definition

@@ -29,6 +29,7 @@ Local validation:
 - Toy demo CLI: passed
 - Structural showcase/source JSON validation: passed
 - Frontend chunk split: Markdown renderer dependencies build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
+- Clean-environment CI validation: passed on GitHub Actions run `28793007839`; latest evidence is recorded in `docs/release_validation.md`
 
 Tracked hygiene:
 
@@ -50,7 +51,7 @@ Tracked hygiene:
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, frontend build, Pages build, and Pages asset validation are configured. |
 | Model support gating | Improved | Medium | Registry gates unsupported models, and hook smoke-test CLI/API/workbench reports now exist; live model promotion still needs per-model evidence. |
 | Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, sweep manifests, and CLI/API validation; richer metrics still need hardening. |
-| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, a docs-first Pages surface, changelog, and release checklist. |
+| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, a docs-first Pages surface, changelog, release checklist, and validation snapshot. |
 
 ## Gap Backlog
 
@@ -131,7 +132,7 @@ Strengths:
 - Honest limitations.
 - Useful public demo artifacts.
 - Clear support matrix.
-- Links to release checklist, readiness audit, changelog, and contributor templates.
+- Links to release checklist, validation snapshot, readiness audit, changelog, and contributor templates.
 
 Gaps:
 
@@ -324,6 +325,8 @@ The project can be called open source product ready when:
 - Beginner curriculum is complete.
 - Release checklist and changelog exist.
 - A clean-environment install test has been performed and documented.
+  - Status: implemented for the current branch.
+  - Evidence: `docs/release_validation.md` records GitHub Actions run `28793007839`.
 
 ## Immediate Next Implementation Slice
 
@@ -332,7 +335,7 @@ Recommended next slice after this branch lands:
 1. Verify GitHub Actions and Pages deployment after push.
 2. Set repository homepage to `https://smgpulse007.github.io/llm-steering/`.
 3. Decide whether to merge the branch into `main` immediately or open a review PR first.
-4. Run and document a clean-environment install test.
-5. Add stronger run-lifecycle states and sweep interpretation copy in the workbench.
+4. Add stronger run-lifecycle states and sweep interpretation copy in the workbench.
+5. Add live loaded-model validation evidence before promoting any additional model.
 
 The completed slices create visible product value without waiting on model downloads or advanced research.
