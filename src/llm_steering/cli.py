@@ -104,7 +104,7 @@ def command_demo(args: argparse.Namespace) -> int:
 def command_api(args: argparse.Namespace) -> int:
     import uvicorn
 
-    uvicorn.run("scripts.serve_api:app", host=args.host, port=args.port, reload=args.reload)
+    uvicorn.run("llm_steering.api:app", host=args.host, port=args.port, reload=args.reload)
     return 0
 
 

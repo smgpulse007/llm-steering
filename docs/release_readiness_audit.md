@@ -42,7 +42,7 @@ Tracked hygiene:
 | Python package | Improved | Medium | Editable base install exposes `llm-steering`; heavy HF/API/media/notebook dependencies are split into extras. |
 | CLI | Strong baseline | Medium | Product CLI now covers verify, toy demo, API serving, sweep plan/run, showcase validation/build, artifact validation, and model registry validation. |
 | API | Good baseline | Medium | FastAPI layer exists, but request schemas and lifecycle states need hardening. |
-| UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface and local-only run gating. |
+| UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface, local-only run gating, and sweep controls. |
 | Beginner education | Good baseline | Medium | Beginner lessons and a no-model toy demo exist; in-browser toy simulation remains later work. |
 | Research grounding | Good | Low | Research notes exist; claims need tighter source-to-feature mapping. |
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
@@ -83,8 +83,8 @@ Tracked hygiene:
 ### P1: Should Fix For Strong Release
 
 1. Add real sweep execution and sweep artifacts.
-   - Status: implemented in backend, API, and CLI.
-   - Evidence: `run_sweep()` writes versioned sweep manifests, `POST /api/experiments/sweep/run` executes a grid, and `llm-steering sweep` can plan or run a JSON request.
+   - Status: implemented in backend, API, CLI, and workbench UI.
+   - Evidence: `run_sweep()` writes versioned sweep manifests, `POST /api/experiments/sweep/run` executes a grid, `llm-steering sweep` can plan or run a JSON request, and the console exposes a layer/coefficient sweep panel with manifest export.
 2. Add download/copy buttons in the UI.
    - Status: implemented for output panes and artifact rail.
    - Evidence: baseline, prompt-only, and steered panes expose rendered/raw copy plus Markdown download; the artifact rail exposes result JSON and vector metadata copy/download actions.
@@ -100,7 +100,7 @@ Completed follow-up:
 - Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
 - Local docs now expose table-of-contents metadata and hashable section links in the API and static Pages fallback.
 - Output and artifact copy/download actions are available in the workbench UI.
-- Layer/coefficient sweeps can execute through the backend/API/CLI and produce versioned sweep manifests.
+- Layer/coefficient sweeps can execute through the backend/API/CLI/workbench and produce versioned sweep manifests.
 
 ### P2: Later Differentiators
 
@@ -173,7 +173,7 @@ Gaps:
 
 - Large Markdown chunk warning.
 - Run lifecycle is still too coarse.
-- Visual workbench sweep controls are still minimal.
+- Sweep result interpretation is still mostly metric/table based.
 
 ### `src/llm_steering/api.py`
 
@@ -187,7 +187,6 @@ Strengths:
 Gaps:
 
 - Schemas are plain dicts rather than full Pydantic models.
-- Visual workbench still needs a first-class sweep execution panel.
 - Hook smoke-test endpoint is missing.
 - Error payloads are not yet product-level.
 

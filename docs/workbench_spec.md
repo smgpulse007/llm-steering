@@ -91,6 +91,7 @@ The Explainability section must have sub-tabs:
 - **Control Knobs** - plain-language and technical descriptions for each control.
 - **Local Docs** - attached repo docs rendered through the app.
 - **Model Roadmap** - model support candidates and readiness criteria.
+- **Sweep Panel** - layer/coefficient grid preview, execution, aggregate metrics, and sweep manifest export.
 
 ### Local Docs
 

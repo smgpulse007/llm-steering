@@ -335,7 +335,7 @@ Deliverables:
   - failed with actionable message
 - Run history panel.
 - Copy/download buttons for outputs and artifacts. Implemented for rendered/raw output copy, Markdown downloads, result JSON, and vector metadata JSON.
-- Better sweep planning UI.
+- Sweep planning/execution UI with grid preview, aggregate metrics, and manifest export.
 - Per-run interpretation panel explaining what changed and what did not.
 - Responsive review across desktop and mobile.
 
@@ -557,7 +557,7 @@ Exit criteria:
 ### Near-Term
 
 - Prompt-only control baseline. Implemented for experiment artifacts and the workbench.
-- Executed layer/coefficient sweeps. Implemented in backend, API, and CLI; visible workbench sweep controls remain a UX follow-up.
+- Executed layer/coefficient sweeps. Implemented in backend, API, CLI, and the workbench sweep panel.
 - Artifact schema validation.
 - No-model toy mode.
 - Model hook smoke tests.

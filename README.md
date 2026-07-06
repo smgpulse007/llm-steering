@@ -64,7 +64,7 @@ The current repository supports:
 - **pre-activation steering** via forward pre-hooks
 - token targeting for either `last_token` or `all_tokens`
 - compact JSON artifact generation for public demos
-- executable layer/coefficient sweeps with versioned sweep manifests
+- executable layer/coefficient sweeps with versioned sweep manifests and workbench controls
 - optional Ollama-vs-HF runtime baseline comparison
 
 ## Steering workbench UI
@@ -80,6 +80,7 @@ The repo now includes a functional steering workbench shell for the open-source 
 - ChatGPT-style markdown rendering for model output
 - hybrid word/line diff highlighting for prompt-only vs activation-steered output
 - vector diagnostics and reliability labels
+- layer/coefficient sweep planning, execution, aggregate metrics, and manifest export
 - separate explainability tab with math, architecture flow, research trail, and model support roadmap
 - copy/download actions for rendered outputs, raw Markdown, result JSON, and vector metadata
 - artifact drawer with reproducible command metadata

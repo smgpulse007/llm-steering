@@ -33,7 +33,9 @@ import {
   fetchModels,
   fetchRuntimeStatus,
   introspectModel,
-  runExperiment
+  planSweep,
+  runExperiment,
+  runSweep
 } from "./lib/api";
 import { steeringPresets, type SteeringPreset } from "./lib/presets";
 import { showcaseUseCases, staticSiteNotes } from "./lib/showcase";
@@ -45,7 +47,9 @@ import type {
   LocalDocContent,
   LocalDocSection,
   ModelRegistryEntry,
-  RuntimeStatus
+  RuntimeStatus,
+  SweepPlan,
+  SweepResult
 } from "./lib/types";
 
 type ActiveTab = "learn" | "console" | "explain";
@@ -303,6 +307,28 @@ function applyPreset(preset: SteeringPreset, currentModelId: string): Experiment
   return { model_id: currentModelId, ...preset.payload };
 }
 
+function parseSweepNumbers(value: string, kind: "layer" | "coefficient"): number[] {
+  const values = value
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => Number(item));
+  if (!values.length) {
+    throw new Error(`Add at least one ${kind}.`);
+  }
+  if (values.some((item) => Number.isNaN(item))) {
+    throw new Error(`${kind === "layer" ? "Layers" : "Coefficients"} must be numeric.`);
+  }
+  if (kind === "layer" && values.some((item) => !Number.isInteger(item))) {
+    throw new Error("Layers must be whole numbers.");
+  }
+  return values;
+}
+
+function aggregateText(value: unknown, fallback = "0"): string {
+  return typeof value === "number" ? String(value) : fallback;
+}
+
 export function App() {
   const initialRoute = useMemo(() => readHashRoute(), []);
   const [models, setModels] = useState<ModelRegistryEntry[]>(fallbackModels);
@@ -323,6 +349,11 @@ export function App() {
   const [docContent, setDocContent] = useState<LocalDocContent | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const [artifactPreview, setArtifactPreview] = useState("");
+  const [sweepLayersText, setSweepLayersText] = useState("12, 18");
+  const [sweepCoefficientsText, setSweepCoefficientsText] = useState("0.5, 1.0, 1.5");
+  const [sweepPlanResult, setSweepPlanResult] = useState<SweepPlan | null>(null);
+  const [sweepResult, setSweepResult] = useState<SweepResult | null>(null);
+  const [sweepBusy, setSweepBusy] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -476,6 +507,59 @@ export function App() {
       setLogs((current) => [`Experiment failed: ${(error as Error).message}`, ...current]);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handlePlanSweep() {
+    if (apiMode !== "local") {
+      setLogs((current) => ["Sweep planning is local-only. Start the FastAPI server to preview the grid.", ...current]);
+      return;
+    }
+    setSweepBusy(true);
+    try {
+      const layers = parseSweepNumbers(sweepLayersText, "layer");
+      const coefficients = parseSweepNumbers(sweepCoefficientsText, "coefficient");
+      const plan = await planSweep(payload, layers, coefficients);
+      setSweepPlanResult(plan);
+      setLogs((current) => [`Sweep plan ready: ${plan.count} runs.`, ...current]);
+    } catch (error) {
+      setLogs((current) => [`Sweep plan failed: ${(error as Error).message}`, ...current]);
+    } finally {
+      setSweepBusy(false);
+    }
+  }
+
+  async function handleRunSweep() {
+    if (apiMode !== "local") {
+      setLogs((current) => ["Sweep blocked: public Pages mode is static; start the local API for real steering.", ...current]);
+      return;
+    }
+    if (!selectedModel.steering_ready) {
+      setLogs((current) => [`Sweep blocked: ${selectedModel.steering_notes}`, ...current]);
+      return;
+    }
+    setSweepBusy(true);
+    try {
+      const layers = parseSweepNumbers(sweepLayersText, "layer");
+      const coefficients = parseSweepNumbers(sweepCoefficientsText, "coefficient");
+      const next = await runSweep(payload, layers, coefficients);
+      setSweepResult(next);
+      setSweepPlanResult({
+        status: "planned",
+        count: next.run_count,
+        runs: next.runs.map((run) => ({
+          model_id: payload.model_id,
+          layer: run.layer,
+          coefficient: run.coefficient,
+          hook_stage: run.hook_stage,
+          apply_to: run.apply_to
+        }))
+      });
+      setLogs((current) => [`Sweep ${next.sweep_id} completed with ${next.run_count} runs.`, ...current]);
+    } catch (error) {
+      setLogs((current) => [`Sweep failed: ${(error as Error).message}`, ...current]);
+    } finally {
+      setSweepBusy(false);
     }
   }
 
@@ -746,6 +830,20 @@ export function App() {
               ))}
             </section>
 
+            <SweepPanel
+              apiMode={apiMode}
+              selectedModel={selectedModel}
+              layersText={sweepLayersText}
+              coefficientsText={sweepCoefficientsText}
+              onLayersTextChange={setSweepLayersText}
+              onCoefficientsTextChange={setSweepCoefficientsText}
+              onPlan={handlePlanSweep}
+              onRun={handleRunSweep}
+              busy={busy || sweepBusy}
+              plan={sweepPlanResult}
+              result={sweepResult}
+            />
+
             <div className="comparison-grid">
               <OutputPane title="Baseline" text={result.baseline} tone="baseline" diffResult={null} side="left" />
               <OutputPane
@@ -789,6 +887,145 @@ export function App() {
         />
       )}
     </main>
+  );
+}
+
+function SweepPanel({
+  apiMode,
+  selectedModel,
+  layersText,
+  coefficientsText,
+  onLayersTextChange,
+  onCoefficientsTextChange,
+  onPlan,
+  onRun,
+  busy,
+  plan,
+  result
+}: {
+  apiMode: "checking" | "local" | "static";
+  selectedModel: ModelRegistryEntry;
+  layersText: string;
+  coefficientsText: string;
+  onLayersTextChange: (value: string) => void;
+  onCoefficientsTextChange: (value: string) => void;
+  onPlan: () => void;
+  onRun: () => void;
+  busy: boolean;
+  plan: SweepPlan | null;
+  result: SweepResult | null;
+}) {
+  const [sweepAction, setSweepAction] = useState("");
+  const runBlocked = apiMode !== "local" || !selectedModel.steering_ready;
+  const manifestJson = result ? JSON.stringify(result, null, 2) : "";
+  const manifestBaseName = safeFileName(result?.sweep_id ?? "sweep-result");
+
+  async function handleCopyManifest() {
+    const copied = await copyTextToClipboard(manifestJson);
+    setSweepAction(copied ? "Sweep manifest copied" : "Sweep manifest unavailable");
+  }
+
+  function handleDownloadManifest() {
+    downloadTextFile(`${manifestBaseName}.json`, manifestJson, "application/json;charset=utf-8");
+    setSweepAction(`${manifestBaseName}.json downloaded`);
+  }
+
+  return (
+    <section className="glass-panel sweep-panel">
+      <div className="panel-title">
+        <Layers size={18} />
+        <span>Layer / Coefficient Sweep</span>
+      </div>
+      <div className="sweep-controls">
+        <label>
+          Layers
+          <input value={layersText} onChange={(event) => onLayersTextChange(event.target.value)} />
+          <small className="field-help">Comma or space separated block numbers.</small>
+        </label>
+        <label>
+          Coefficients
+          <input value={coefficientsText} onChange={(event) => onCoefficientsTextChange(event.target.value)} />
+          <small className="field-help">Strength values for the selected direction.</small>
+        </label>
+        <div className="sweep-actions">
+          <button className="secondary-button compact" onClick={onPlan} disabled={busy || apiMode !== "local"}>
+            <SlidersHorizontal size={16} /> Plan
+          </button>
+          <button className="primary-button" onClick={onRun} disabled={busy || runBlocked}>
+            <Play size={16} /> Run Sweep
+          </button>
+        </div>
+      </div>
+
+      <div className="sweep-status-row">
+        <span className={runBlocked ? "blocked-note" : "ready-note"}>
+          {apiMode !== "local"
+            ? "Static Pages mode"
+            : runBlocked
+              ? "Model is not steering-ready"
+              : "Ready to execute grid"}
+        </span>
+        {plan ? <strong>{plan.count} planned runs</strong> : <strong>No grid planned</strong>}
+      </div>
+
+      {plan ? (
+        <div className="sweep-plan-list" aria-label="Planned sweep runs">
+          {plan.runs.slice(0, 8).map((run, index) => (
+            <span key={`${run.layer}-${run.coefficient}-${index}`}>
+              L{run.layer} / {run.coefficient}
+            </span>
+          ))}
+          {plan.runs.length > 8 ? <span>+{plan.runs.length - 8} more</span> : null}
+        </div>
+      ) : null}
+
+      {result ? (
+        <section className="sweep-result">
+          <div className="sweep-metrics">
+            <Metric label="Status" value={result.status} />
+            <Metric label="Completed" value={aggregateText(result.aggregate_diagnostics.completed_runs, String(result.run_count))} />
+            <Metric label="Activation changed" value={aggregateText(result.aggregate_diagnostics.activation_changed_runs)} />
+            <Metric label="Prompt changed" value={aggregateText(result.aggregate_diagnostics.prompt_control_changed_runs)} />
+            <Metric label="Manifest" value={result.artifact_path ?? "not saved"} />
+          </div>
+          <div className="artifact-actions" aria-label="Sweep manifest actions">
+            <button className="icon-action" onClick={handleCopyManifest}>
+              <Copy size={15} /> Copy manifest
+            </button>
+            <button className="icon-action" onClick={handleDownloadManifest}>
+              <Download size={15} /> Download manifest
+            </button>
+          </div>
+          {sweepAction ? <p className="action-status">{sweepAction}</p> : null}
+          <div className="sweep-table-wrap">
+            <table className="sweep-table">
+              <thead>
+                <tr>
+                  <th>Run</th>
+                  <th>Layer</th>
+                  <th>Coeff</th>
+                  <th>Activation delta</th>
+                  <th>Artifact</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.runs.slice(0, 12).map((run) => (
+                  <tr key={run.experiment_id}>
+                    <td>{run.index + 1}</td>
+                    <td>{run.layer}</td>
+                    <td>{run.coefficient}</td>
+                    <td>{run.steering_delta.char_delta >= 0 ? "+" : ""}{run.steering_delta.char_delta} chars</td>
+                    <td>{run.artifact_path ?? "not saved"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {result.runs.length > 12 ? <p className="sweep-footnote">Showing 12 of {result.runs.length} runs.</p> : null}
+          <code>{result.reproduce_command}</code>
+        </section>
+      ) : null}
+    </section>
   );
 }
 

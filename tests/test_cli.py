@@ -1,6 +1,10 @@
-from llm_steering.cli import main
 import json
+import sys
+from types import SimpleNamespace
+
 import pytest
+
+from llm_steering.cli import main
 
 
 def test_cli_help_lists_product_commands(capsys) -> None:
@@ -27,6 +31,23 @@ def test_cli_toy_demo_json(capsys) -> None:
     assert '"mode": "synthetic_no_model"' in output
     assert '"steering_vector"' in output
     assert "Activation-steered toy model" in output
+
+
+def test_cli_api_serves_packaged_fastapi_app(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+
+    def fake_run(app: str, *, host: str, port: int, reload: bool) -> None:
+        seen.update({"app": app, "host": host, "port": port, "reload": reload})
+
+    monkeypatch.setitem(sys.modules, "uvicorn", SimpleNamespace(run=fake_run))
+
+    assert main(["api", "--host", "0.0.0.0", "--port", "8123", "--reload"]) == 0
+    assert seen == {
+        "app": "llm_steering.api:app",
+        "host": "0.0.0.0",
+        "port": 8123,
+        "reload": True,
+    }
 
 
 def test_cli_sweep_plan_only(tmp_path, capsys) -> None:

@@ -326,6 +326,118 @@ h2 {
   gap: 10px;
 }
 
+.sweep-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.sweep-actions {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  align-self: end;
+}
+
+.sweep-status-row,
+.sweep-plan-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sweep-status-row {
+  justify-content: space-between;
+  margin-top: 12px;
+  color: #cbd7d2;
+  font-size: 0.86rem;
+}
+
+.sweep-status-row strong {
+  color: #f4fbf7;
+}
+
+.sweep-plan-list {
+  margin-top: 10px;
+}
+
+.sweep-plan-list span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(157, 240, 200, 0.2);
+  border-radius: 999px;
+  background: rgba(48, 109, 94, 0.14);
+  color: #dce8e3;
+  padding: 4px 9px;
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.sweep-result {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.sweep-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sweep-metrics .metric-row {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 74px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px;
+}
+
+.sweep-metrics .metric-row strong {
+  max-width: 100%;
+  text-align: left;
+}
+
+.sweep-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.sweep-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 8px;
+  font-size: 0.84rem;
+}
+
+.sweep-table th,
+.sweep-table td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 9px;
+  color: #dce8e3;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.sweep-table th {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f7fbf8;
+}
+
+.sweep-footnote {
+  margin: -4px 0 0;
+  color: #9ac3bd;
+  font-size: 0.8rem;
+}
+
 label {
   display: grid;
   gap: 7px;
@@ -1166,6 +1278,11 @@ code {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .sweep-controls,
+  .sweep-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .comparison-grid {
     grid-template-columns: 1fr;
   }
@@ -1182,6 +1299,8 @@ code {
   .comparison-grid,
   .right-rail,
   .control-grid,
+  .sweep-controls,
+  .sweep-metrics,
   .preset-grid,
   .knob-grid,
   .math-stack,
@@ -1265,6 +1384,16 @@ code {
   .public-links a {
     max-width: 100%;
     white-space: normal;
+  }
+
+  .sweep-actions,
+  .sweep-actions .primary-button,
+  .sweep-actions .secondary-button {
+    width: 100%;
+  }
+
+  .sweep-actions {
+    display: grid;
   }
 
   .markdown-body table {
