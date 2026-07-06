@@ -36,6 +36,7 @@ The model picker must avoid horizontal scrolling. Long model names, status badge
 - support status
 - concise runtime/steering notes for the selected model
 - introspection action
+- hook-smoke report action with explicit live-load opt-in
 
 Unsupported models are allowed to appear in the picker, but steering execution must stay gated until validation passes.
 

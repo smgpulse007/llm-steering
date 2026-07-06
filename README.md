@@ -73,7 +73,7 @@ The current repository supports:
 The repo now includes a functional steering workbench shell for the open-source release path. It is designed as an operational console rather than a landing page:
 
 - model picker with explicit support badges
-- runtime/introspection status
+- runtime/introspection status and hook-smoke validation reports
 - prompt-pair dataset editor
 - steering controls for layer, coefficient, hook stage, token scope, normalization, and decoding settings
 - preset use cases for support, tutoring, launch risk, and code review
@@ -110,6 +110,15 @@ http://127.0.0.1:5173
 ```
 
 The UI proxies `/api/*` calls to `http://127.0.0.1:8000` during development. The workbench can display the registry without the API through a small fallback snapshot, but real experiment runs require the Python API and local model access.
+
+If port `8000` is already in use, start the API on another port and point Vite at it:
+
+```powershell
+llm-steering api --port 8126
+cd apps/web
+$env:VITE_API_PROXY_TARGET="http://127.0.0.1:8126"
+npm run dev
+```
 
 The GitHub Pages build runs in static mode. It teaches the beginner path, renders searchable local docs with section outlines, and displays checked-in showcase artifacts, but it does not run the FastAPI API or generate new model outputs in the browser.
 

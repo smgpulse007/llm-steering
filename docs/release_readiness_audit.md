@@ -47,7 +47,7 @@ Tracked hygiene:
 | Research grounding | Good | Low | Research notes exist; claims need tighter source-to-feature mapping. |
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, and frontend build are configured. |
-| Model support gating | Improved | Medium | Registry gates unsupported models, and hook smoke-test CLI/API reports now exist; live model promotion still needs per-model evidence. |
+| Model support gating | Improved | Medium | Registry gates unsupported models, and hook smoke-test CLI/API/workbench reports now exist; live model promotion still needs per-model evidence. |
 | Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, sweep manifests, and CLI/API validation; richer metrics still need hardening. |
 | Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
 
@@ -90,7 +90,7 @@ Tracked hygiene:
    - Evidence: baseline, prompt-only, and steered panes expose rendered/raw copy plus Markdown download; the artifact rail exposes result JSON and vector metadata copy/download actions.
 3. Add hook smoke-test CLI/API.
    - Status: implemented.
-   - Evidence: `llm-steering hook-smoke` emits a no-load registry report by default, `--load-model` runs live pre/post hook probes across token scopes, and `POST /api/models/hook-smoke` exposes the same report contract.
+   - Evidence: `llm-steering hook-smoke` emits a no-load registry report by default, `--load-model` runs live pre/post hook probes across token scopes, `POST /api/models/hook-smoke` exposes the same report contract, and the workbench model rail can display the report.
 4. Add docs path tests for future lesson files.
    - Status: implemented for indexed docs and section outlines.
    - Evidence: API tests fetch every indexed doc and require non-empty extracted sections.
@@ -103,7 +103,7 @@ Completed follow-up:
 - Local docs now expose table-of-contents metadata, search/filter affordances, and hashable section links in the API and static Pages fallback.
 - Output and artifact copy/download actions are available in the workbench UI.
 - Layer/coefficient sweeps can execute through the backend/API/CLI/workbench and produce versioned sweep manifests.
-- Hook smoke-test reports are available through the CLI and API.
+- Hook smoke-test reports are available through the CLI, API, and workbench model rail.
 
 ### P2: Later Differentiators
 

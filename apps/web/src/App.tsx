@@ -33,6 +33,7 @@ import {
   fetchExperiment,
   fetchModels,
   fetchRuntimeStatus,
+  hookSmokeModel,
   introspectModel,
   planSweep,
   runExperiment,
@@ -43,6 +44,7 @@ import { showcaseUseCases, staticSiteNotes } from "./lib/showcase";
 import type {
   ExperimentPayload,
   ExperimentResult,
+  HookSmokeReport,
   IntrospectionReport,
   LocalDoc,
   LocalDocContent,
@@ -337,6 +339,8 @@ export function App() {
   const [selectedId, setSelectedId] = useState(initialPayload.model_id);
   const [selectedPresetId, setSelectedPresetId] = useState(steeringPresets[0].id);
   const [introspection, setIntrospection] = useState<IntrospectionReport | null>(null);
+  const [hookSmokeReport, setHookSmokeReport] = useState<HookSmokeReport | null>(null);
+  const [hookSmokeLoadModel, setHookSmokeLoadModel] = useState(false);
   const [result, setResult] = useState<ExperimentResult>(demoResult);
   const [logs, setLogs] = useState<string[]>(["Workbench initialized with local fallback registry."]);
   const [busy, setBusy] = useState(false);
@@ -437,6 +441,7 @@ export function App() {
       coefficient: selectedModel.default_coefficient ?? current.coefficient
     }));
     setIntrospection(null);
+    setHookSmokeReport(null);
   }, [selectedModel]);
 
   function selectDoc(docId: string, scroll = false, sectionId = "") {
@@ -485,6 +490,28 @@ export function App() {
       setLogs((current) => [`Introspection status: ${report.status} for ${report.model_id}.`, ...current]);
     } catch (error) {
       setLogs((current) => [`Introspection failed: ${(error as Error).message}`, ...current]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleHookSmoke() {
+    if (apiMode !== "local") {
+      setLogs((current) => ["Hook smoke reports are local-only. Start the FastAPI server to validate model hooks.", ...current]);
+      return;
+    }
+    setBusy(true);
+    try {
+      const report = await hookSmokeModel(selectedModel.model_id, {
+        loadModel: hookSmokeLoadModel,
+        layer: payload.layer,
+        systemPrompt: payload.system_prompt,
+        userPrompt: payload.user_prompt
+      });
+      setHookSmokeReport(report);
+      setLogs((current) => [`Hook smoke status: ${report.status} for ${report.model_id}.`, ...current]);
+    } catch (error) {
+      setLogs((current) => [`Hook smoke failed: ${(error as Error).message}`, ...current]);
     } finally {
       setBusy(false);
     }
@@ -655,9 +682,47 @@ export function App() {
               <p>{selectedModel.runtime_notes}</p>
               <p className="warning-copy">{selectedModel.steering_notes}</p>
             </div>
-            <button className="secondary-button" onClick={handleIntrospect} disabled={busy}>
-              <Layers size={16} /> Introspect
-            </button>
+            <div className="model-validation">
+              <label className="checkbox-field validation-toggle">
+                <span>Load model for live hook smoke</span>
+                <small className="field-help">Off returns a registry-only report without loading weights.</small>
+                <input
+                  type="checkbox"
+                  checked={hookSmokeLoadModel}
+                  onChange={(event) => setHookSmokeLoadModel(event.target.checked)}
+                  disabled={busy}
+                />
+              </label>
+              <div className="validation-actions">
+                <button className="secondary-button compact" onClick={handleIntrospect} disabled={busy || apiMode !== "local"}>
+                  <Layers size={16} /> Introspect
+                </button>
+                <button className="secondary-button compact" onClick={handleHookSmoke} disabled={busy || apiMode !== "local"}>
+                  <Activity size={16} /> Hook Smoke
+                </button>
+              </div>
+              {hookSmokeReport ? (
+                <div className="hook-smoke-report">
+                  <Metric label="Hook smoke" value={hookSmokeReport.status} />
+                  <Metric label="Mode" value={hookSmokeReport.mode.replace("_", " ")} />
+                  <Metric
+                    label="Checks"
+                    value={
+                      hookSmokeReport.checks.length
+                        ? `${hookSmokeReport.checks.filter((check) => check.passed).length}/${hookSmokeReport.checks.length}`
+                        : "not run"
+                    }
+                  />
+                  <Metric label="Layer" value={hookSmokeReport.layer_index === null ? "not loaded" : String(hookSmokeReport.layer_index)} />
+                  {hookSmokeReport.warnings[0] ? <p className="warning-copy">{hookSmokeReport.warnings[0]}</p> : null}
+                  <code>{hookSmokeReport.reproduce_command}</code>
+                </div>
+              ) : (
+                <p className="field-help validation-copy">
+                  Run hook smoke before promoting a model from visible candidate to steering-ready.
+                </p>
+              )}
+            </div>
           </aside>
 
           <section className="center-stack">

@@ -430,7 +430,7 @@ Deliverables:
   - attach post-hook
   - run generation
 - Hook smoke-test endpoint/CLI.
-- Implemented as `llm-steering hook-smoke` and `POST /api/models/hook-smoke`; no-load reports are safe for CI, and `--load-model` runs pre/post probes across `last_token` and `all_tokens`.
+- Implemented as `llm-steering hook-smoke`, `POST /api/models/hook-smoke`, and a workbench model-rail report; no-load reports are safe for CI, and `--load-model` runs pre/post probes across `last_token` and `all_tokens`.
 - Model validation report artifact.
 - Support promotion checklist.
 - Initial validation target order:

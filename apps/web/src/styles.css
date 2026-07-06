@@ -272,6 +272,45 @@ h2 {
   color: #9df0c8;
 }
 
+.model-validation {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.validation-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.validation-actions .secondary-button.compact {
+  width: 100%;
+  margin-top: 0;
+}
+
+.validation-toggle {
+  margin: 0;
+}
+
+.validation-copy {
+  margin: 0;
+}
+
+.hook-smoke-report {
+  display: grid;
+  gap: 8px;
+}
+
+.hook-smoke-report .metric-row {
+  min-height: 30px;
+}
+
+.hook-smoke-report code {
+  font-size: 0.74rem;
+}
+
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1534,6 +1573,10 @@ code {
 
   .sweep-actions {
     display: grid;
+  }
+
+  .validation-actions {
+    grid-template-columns: 1fr;
   }
 
   .markdown-body table {

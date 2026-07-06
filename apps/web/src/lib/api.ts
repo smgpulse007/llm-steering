@@ -1,6 +1,7 @@
 import type {
   ExperimentPayload,
   ExperimentResult,
+  HookSmokeReport,
   IntrospectionReport,
   LocalDoc,
   LocalDocContent,
@@ -144,6 +145,27 @@ export async function introspectModel(modelId: string): Promise<IntrospectionRep
   return requestJson<IntrospectionReport>("/api/models/introspect", {
     method: "POST",
     body: JSON.stringify({ model_id: modelId })
+  });
+}
+
+export async function hookSmokeModel(
+  modelId: string,
+  options: {
+    loadModel?: boolean;
+    layer?: number;
+    systemPrompt?: string;
+    userPrompt?: string;
+  } = {}
+): Promise<HookSmokeReport> {
+  return requestJson<HookSmokeReport>("/api/models/hook-smoke", {
+    method: "POST",
+    body: JSON.stringify({
+      model_id: modelId,
+      load_model: options.loadModel ?? false,
+      layer: options.layer,
+      system_prompt: options.systemPrompt ?? "",
+      user_prompt: options.userPrompt ?? "Reply with one short sentence."
+    })
   });
 }
 

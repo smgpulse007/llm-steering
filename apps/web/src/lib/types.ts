@@ -30,6 +30,30 @@ export type IntrospectionReport = {
   warnings: string[];
 };
 
+export type HookSmokeCheck = {
+  hook_stage: string;
+  apply_to: string;
+  passed: boolean;
+  hook_fired: boolean;
+  error: string | null;
+};
+
+export type HookSmokeReport = {
+  model_id: string;
+  created_at_utc: string;
+  mode: string;
+  status: string;
+  registry_status: string;
+  steering_ready_by_registry: boolean;
+  model_class: string | null;
+  architecture: string;
+  layer_index: number | null;
+  layer_count: number | null;
+  checks: HookSmokeCheck[];
+  warnings: string[];
+  reproduce_command: string;
+};
+
 export type ExperimentPayload = {
   model_id: string;
   system_prompt: string;
