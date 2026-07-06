@@ -53,7 +53,7 @@ Typical users include:
 The current repository supports:
 
 - a no-model toy activation-steering demo for first-time learners
-- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering showcase`, and `llm-steering validate-model`
+- an installed product CLI: `llm-steering verify`, `llm-steering demo`, `llm-steering api`, `llm-steering showcase`, `llm-steering artifacts`, and `llm-steering validate-model`
 - local Hugging Face loading for `google/gemma-4-E2B-it`
 - a registry-backed FastAPI workbench API for model support status, runtime settings, and gated experiment runs
 - a Vite + React + TypeScript workbench UI under `apps/web`
@@ -347,16 +347,18 @@ The model registry that drives the workbench lives in `src/llm_steering/model_re
 ### Path A: no-model beginner demo
 
 This path is for learning the mechanics before downloading model weights. It does not require Hugging Face auth, Ollama, CUDA, or a GPU.
+The package currently requires Python 3.13.
 
 ```powershell
 git clone https://github.com/smgpulse007/llm-steering.git
 cd llm-steering
-python -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e .[dev]
+python -m pip install -e .
 llm-steering verify --no-model
 llm-steering demo --toy --json
 llm-steering showcase validate
+llm-steering artifacts validate
 ```
 
 The toy demo is explicitly synthetic. It explains steering-vector mechanics with named behavior features, not real transformer hidden states.
@@ -370,15 +372,17 @@ Use this path when you want real Hugging Face hidden-state access and activation
 ```powershell
 git clone https://github.com/smgpulse007/llm-steering.git
 cd llm-steering
-python -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
 #### 2. Install the project
 
 ```powershell
-python -m pip install -e .[dev]
+python -m pip install -e .[api,media]
 ```
+
+The base install is intentionally light for the no-model tutorial path. Use `.[api,media]` for the local FastAPI/Hugging Face workbench and showcase media generation, `.[notebooks]` for notebook exploration, and `.[dev]` for the full test/development stack.
 
 #### 3. Configure access to Hugging Face
 

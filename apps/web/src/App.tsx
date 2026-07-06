@@ -45,6 +45,41 @@ import type {
   RuntimeStatus
 } from "./lib/types";
 
+type ActiveTab = "learn" | "console" | "explain";
+type ExplainTab = "math" | "controls" | "docs" | "roadmap";
+
+const DEFAULT_DOC_ID = "lesson_transformers";
+
+const docCategoryLabels: Record<string, string> = {
+  lessons: "Beginner lessons",
+  docs: "Reference docs",
+  research: "Research notes"
+};
+
+function readHashRoute(): { activeTab?: ActiveTab; explainTab?: ExplainTab; docId?: string } {
+  if (typeof window === "undefined") return {};
+  const hash = window.location.hash.replace(/^#/, "");
+  const [section, value] = hash.split("/");
+  if (section === "docs") {
+    return { activeTab: "learn", docId: value || DEFAULT_DOC_ID };
+  }
+  if (section === "workbench") {
+    return { activeTab: "console" };
+  }
+  if (section === "explain") {
+    const tabs: ExplainTab[] = ["math", "controls", "docs", "roadmap"];
+    return { activeTab: "explain", explainTab: tabs.includes(value as ExplainTab) ? (value as ExplainTab) : "math" };
+  }
+  return {};
+}
+
+function replaceHash(hash: string) {
+  if (typeof window === "undefined") return;
+  if (window.location.hash !== hash) {
+    window.history.replaceState(null, "", hash);
+  }
+}
+
 const initialPayload: ExperimentPayload = {
   model_id: "google/gemma-4-E2B-it",
   ...steeringPresets[0].payload
@@ -185,6 +220,7 @@ function applyPreset(preset: SteeringPreset, currentModelId: string): Experiment
 }
 
 export function App() {
+  const initialRoute = useMemo(() => readHashRoute(), []);
   const [models, setModels] = useState<ModelRegistryEntry[]>(fallbackModels);
   const [payload, setPayload] = useState<ExperimentPayload>(initialPayload);
   const [selectedId, setSelectedId] = useState(initialPayload.model_id);
@@ -193,15 +229,26 @@ export function App() {
   const [result, setResult] = useState<ExperimentResult>(demoResult);
   const [logs, setLogs] = useState<string[]>(["Workbench initialized with local fallback registry."]);
   const [busy, setBusy] = useState(false);
-  const [activeTab, setActiveTab] = useState<"learn" | "console" | "explain">("learn");
-  const [explainTab, setExplainTab] = useState<"math" | "controls" | "docs" | "roadmap">("math");
+  const [activeTab, setActiveTab] = useState<ActiveTab>(initialRoute.activeTab ?? "learn");
+  const [explainTab, setExplainTab] = useState<ExplainTab>(initialRoute.explainTab ?? "math");
   const [apiMode, setApiMode] = useState<"checking" | "local" | "static">("checking");
   const [autoDiff, setAutoDiff] = useState(true);
   const [docs, setDocs] = useState<LocalDoc[]>([]);
-  const [selectedDocId, setSelectedDocId] = useState("methodology");
+  const [selectedDocId, setSelectedDocId] = useState(initialRoute.docId ?? DEFAULT_DOC_ID);
   const [docContent, setDocContent] = useState<LocalDocContent | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const [artifactPreview, setArtifactPreview] = useState("");
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const route = readHashRoute();
+      if (route.activeTab) setActiveTab(route.activeTab);
+      if (route.explainTab) setExplainTab(route.explainTab);
+      if (route.docId) setSelectedDocId(route.docId);
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   useEffect(() => {
     fetchModels().then((items) => {
@@ -224,7 +271,9 @@ export function App() {
     fetchDocs()
       .then((items) => {
         setDocs(items);
-        setSelectedDocId(items[0]?.doc_id ?? "methodology");
+        setSelectedDocId((current) =>
+          items.some((item) => item.doc_id === current) ? current : items[0]?.doc_id ?? DEFAULT_DOC_ID
+        );
       })
       .catch((error) => setLogs((current) => [`Doc index unavailable: ${(error as Error).message}`, ...current]));
   }, []);
@@ -258,6 +307,28 @@ export function App() {
     }));
     setIntrospection(null);
   }, [selectedModel]);
+
+  function selectDoc(docId: string, scroll = false) {
+    setSelectedDocId(docId);
+    setActiveTab("learn");
+    replaceHash(`#docs/${docId}`);
+    if (scroll) {
+      window.requestAnimationFrame(() => {
+        document.getElementById("docs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
+  function openConsole() {
+    setActiveTab("console");
+    replaceHash("#workbench");
+  }
+
+  function openExplain(tab: ExplainTab = explainTab) {
+    setActiveTab("explain");
+    setExplainTab(tab);
+    replaceHash(`#explain/${tab}`);
+  }
 
   function choosePreset(preset: SteeringPreset) {
     setSelectedPresetId(preset.id);
@@ -347,19 +418,27 @@ export function App() {
       </section>
 
       <nav className="tabbar glass-band" aria-label="Workbench tabs">
-        <button className={activeTab === "learn" ? "active" : ""} onClick={() => setActiveTab("learn")}>
-          <Globe2 size={16} /> Learn
+        <button className={activeTab === "learn" ? "active" : ""} onClick={() => selectDoc(selectedDocId)}>
+          <Globe2 size={16} /> Docs
         </button>
-        <button className={activeTab === "console" ? "active" : ""} onClick={() => setActiveTab("console")}>
+        <button className={activeTab === "console" ? "active" : ""} onClick={openConsole}>
           <SlidersHorizontal size={16} /> Console
         </button>
-        <button className={activeTab === "explain" ? "active" : ""} onClick={() => setActiveTab("explain")}>
+        <button className={activeTab === "explain" ? "active" : ""} onClick={() => openExplain()}>
           <GraduationCap size={16} /> Explainability
         </button>
       </nav>
 
       {activeTab === "learn" ? (
-        <LearningHome apiMode={apiMode} onOpenConsole={() => setActiveTab("console")} onOpenDocs={() => setActiveTab("explain")} />
+        <LearningHome
+          apiMode={apiMode}
+          docs={docs}
+          selectedDocId={selectedDocId}
+          onSelectDoc={selectDoc}
+          docContent={docContent}
+          onOpenConsole={openConsole}
+          onOpenDocs={() => selectDoc(DEFAULT_DOC_ID, true)}
+        />
       ) : activeTab === "console" ? (
         <section className="workspace-grid">
           <aside className="left-rail glass-panel">
@@ -584,10 +663,10 @@ export function App() {
           models={models}
           selectedModel={selectedModel}
           explainTab={explainTab}
-          setExplainTab={setExplainTab}
+          setExplainTab={openExplain}
           docs={docs}
           selectedDocId={selectedDocId}
-          setSelectedDocId={setSelectedDocId}
+          setSelectedDocId={(docId) => selectDoc(docId)}
           docContent={docContent}
         />
       )}
@@ -597,10 +676,18 @@ export function App() {
 
 function LearningHome({
   apiMode,
+  docs,
+  selectedDocId,
+  onSelectDoc,
+  docContent,
   onOpenConsole,
   onOpenDocs
 }: {
   apiMode: "checking" | "local" | "static";
+  docs: LocalDoc[];
+  selectedDocId: string;
+  onSelectDoc: (docId: string, scroll?: boolean) => void;
+  docContent: LocalDocContent | null;
   onOpenConsole: () => void;
   onOpenDocs: () => void;
 }) {
@@ -623,8 +710,28 @@ function LearningHome({
           <button className="secondary-button compact" onClick={onOpenConsole}>
             <TerminalSquare size={16} /> Open Workbench
           </button>
+          <div className="public-links" aria-label="Project links">
+            <a href="https://github.com/smgpulse007/llm-steering" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a href="https://github.com/smgpulse007/llm-steering#readme" target="_blank" rel="noreferrer">
+              README
+            </a>
+            <a href="https://github.com/smgpulse007/llm-steering/tree/main/research" target="_blank" rel="noreferrer">
+              Research
+            </a>
+          </div>
         </div>
       </section>
+
+      <DocsExplorer
+        title="Learning Path"
+        docs={docs}
+        selectedDocId={selectedDocId}
+        onSelectDoc={onSelectDoc}
+        docContent={docContent}
+        className="public-docs"
+      />
 
       <section className="public-grid">
         <section className="glass-panel">
@@ -684,6 +791,60 @@ function LearningHome({
         {staticSiteNotes.map((note) => (
           <p key={note}>{note}</p>
         ))}
+      </section>
+    </section>
+  );
+}
+
+function DocsExplorer({
+  title,
+  docs,
+  selectedDocId,
+  onSelectDoc,
+  docContent,
+  className = ""
+}: {
+  title: string;
+  docs: LocalDoc[];
+  selectedDocId: string;
+  onSelectDoc: (docId: string) => void;
+  docContent: LocalDocContent | null;
+  className?: string;
+}) {
+  const categories = Array.from(new Set(docs.map((doc) => doc.category)));
+
+  return (
+    <section className={`docs-grid ${className}`} id="docs">
+      <aside className="glass-panel docs-list">
+        <div className="panel-title">
+          <ScrollText size={18} />
+          <span>{title}</span>
+        </div>
+        {categories.map((category) => (
+          <div className="doc-group" key={category}>
+            <span>{docCategoryLabels[category] ?? category}</span>
+            {docs
+              .filter((doc) => doc.category === category)
+              .map((doc) => (
+                <button
+                  className={`doc-row ${doc.doc_id === selectedDocId ? "selected" : ""}`}
+                  key={doc.doc_id}
+                  onClick={() => onSelectDoc(doc.doc_id)}
+                >
+                  <strong>{doc.title}</strong>
+                  <small>{doc.path}</small>
+                  <span>{doc.summary}</span>
+                </button>
+              ))}
+          </div>
+        ))}
+      </aside>
+      <section className="glass-panel doc-reader">
+        <div className="panel-title">
+          <BookOpen size={18} />
+          <span>{docContent?.doc.title ?? "Loading document"}</span>
+        </div>
+        <MarkdownOutput text={docContent?.content ?? "Loading local documentation..."} />
       </section>
     </section>
   );
@@ -783,7 +944,7 @@ function ExplainabilityView({
   models: ModelRegistryEntry[];
   selectedModel: ModelRegistryEntry;
   explainTab: "math" | "controls" | "docs" | "roadmap";
-  setExplainTab: (tab: "math" | "controls" | "docs" | "roadmap") => void;
+  setExplainTab: (tab: ExplainTab) => void;
   docs: LocalDoc[];
   selectedDocId: string;
   setSelectedDocId: (docId: string) => void;
@@ -882,32 +1043,13 @@ function ExplainabilityView({
       )}
 
       {explainTab === "docs" && (
-        <section className="docs-grid">
-          <aside className="glass-panel docs-list">
-            <div className="panel-title">
-              <ScrollText size={18} />
-              <span>Attached Local Docs</span>
-            </div>
-            {docs.map((doc) => (
-              <button
-                className={`doc-row ${doc.doc_id === selectedDocId ? "selected" : ""}`}
-                key={doc.doc_id}
-                onClick={() => setSelectedDocId(doc.doc_id)}
-              >
-                <strong>{doc.title}</strong>
-                <small>{doc.path}</small>
-                <span>{doc.summary}</span>
-              </button>
-            ))}
-          </aside>
-          <section className="glass-panel doc-reader">
-            <div className="panel-title">
-              <BookOpen size={18} />
-              <span>{docContent?.doc.title ?? "Loading document"}</span>
-            </div>
-            <MarkdownOutput text={docContent?.content ?? "Loading local documentation..."} />
-          </section>
-        </section>
+        <DocsExplorer
+          title="Attached Local Docs"
+          docs={docs}
+          selectedDocId={selectedDocId}
+          onSelectDoc={setSelectedDocId}
+          docContent={docContent}
+        />
       )}
 
       {explainTab === "roadmap" && (

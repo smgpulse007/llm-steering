@@ -228,7 +228,8 @@ Likely files:
 
 Validation gates:
 
-- `python -m pip install -e .[dev]`
+- `python -m pip install -e .`
+- `python -m pip install -e .[api,media]`
 - `python -m llm_steering.cli verify` or equivalent console command
 - `llm-steering --help`
 - `llm-steering verify --no-model`
@@ -606,6 +607,7 @@ Future gates:
 
 - `llm-steering verify --no-model`
 - `llm-steering demo --toy`
+- `llm-steering artifacts validate`
 - `llm-steering validate-model google/gemma-4-E2B-it`
 - `llm-steering export-site-check`
 

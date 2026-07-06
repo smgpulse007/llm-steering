@@ -1,4 +1,6 @@
 {
+  "schema_version": "llm-steering.showcase.v1",
+  "artifact_kind": "runtime_baseline",
   "prompt": "Explain activation steering in plain English in two sentences.",
   "system_prompt": "You are a helpful assistant.",
   "ollama_model": "gemma4",

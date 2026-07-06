@@ -19,17 +19,21 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install dependencies
+      - name: Install base package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .[dev]
+          python -m pip install -e .
 
-      - name: Validate no-model CLI path
+      - name: Validate no-model CLI path on base install
         run: |
           llm-steering --help
           llm-steering verify --no-model
           llm-steering demo --toy --json
           llm-steering showcase validate
+          llm-steering artifacts validate
+
+      - name: Install development extras
+        run: python -m pip install -e .[dev]
 
       - name: Run tests
         run: python -m pytest

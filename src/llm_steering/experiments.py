@@ -9,6 +9,7 @@ from uuid import uuid4
 
 import torch
 
+from .artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION, VECTOR_KIND, VECTOR_SCHEMA_VERSION
 from .config import RuntimeSettings, project_root
 from .hf_runtime import LoadedHFModel, generate_text, load_hf_model
 from .metrics import output_delta_metrics, vector_diagnostics
@@ -63,6 +64,8 @@ class ExperimentRequest:
 
 @dataclass(frozen=True, slots=True)
 class ExperimentResult:
+    schema_version: str
+    artifact_kind: str
     experiment_id: str
     created_at_utc: str
     request: dict[str, object]
@@ -150,6 +153,8 @@ def build_vector_artifact(
         save_vector(artifact, vector_path)
 
     return {
+        "schema_version": VECTOR_SCHEMA_VERSION,
+        "artifact_kind": VECTOR_KIND,
         "vector_id": vector_id,
         "model_id": request.model_id,
         "method": artifact.metadata.get("method"),
@@ -206,6 +211,8 @@ def run_experiment(
         save_vector(artifact, vector_path)
 
     result = ExperimentResult(
+        schema_version=EXPERIMENT_SCHEMA_VERSION,
+        artifact_kind=EXPERIMENT_KIND,
         experiment_id=experiment_id,
         created_at_utc=datetime.now(timezone.utc).isoformat(),
         request={

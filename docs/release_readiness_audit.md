@@ -6,7 +6,7 @@ Branch: `codex/open-source-productization-plan`
 
 ## Summary
 
-`llm-steering` has moved from a script-first local starter kit toward a productized open source release. The branch now adds an installed CLI, no-model toy onboarding, beginner lessons, structural showcase validation, expanded CI, GitHub Pages workflow scaffolding, issue/PR templates, and a static learning surface inside the React app. Remaining gaps are mainly GitHub-side deployment verification, dependency-extra splitting, deeper experiment reproducibility, and model-validation automation.
+`llm-steering` has moved from a script-first local starter kit toward a productized open source release. The branch now adds an installed CLI, no-model toy onboarding, beginner lessons, structural showcase validation, expanded CI, GitHub Pages workflow scaffolding, issue/PR templates, and a static learning surface inside the React app. A later docs-first pass added a public docs reader, hashable docs links, bundled Pages media, and split Python dependency extras. Remaining gaps are mainly deeper experiment reproducibility and model-validation automation.
 
 ## Verified Current State
 
@@ -15,8 +15,8 @@ Repository:
 - Remote: `https://github.com/smgpulse007/llm-steering.git`
 - Public repo: yes
 - Default branch: `main`
-- GitHub Pages: not enabled as of this audit
-- Current branch for this work: `codex/open-source-productization-plan`
+- GitHub Pages: enabled after the productization merge
+- Current branch for this follow-up work: `codex/docs-first-pages`
 
 Local validation:
 
@@ -39,17 +39,17 @@ Tracked hygiene:
 
 | Area | Current Status | Release Risk | Notes |
 | --- | --- | --- | --- |
-| Python package | Improved | Medium | Editable install works locally and now exposes `llm-steering`; dependency extras are still not split. |
+| Python package | Improved | Medium | Editable base install exposes `llm-steering`; heavy HF/API/media/notebook dependencies are split into extras. |
 | CLI | Good baseline | Medium | Product CLI now covers verify, toy demo, API serving, showcase validation/build, and model registry validation. |
 | API | Good baseline | Medium | FastAPI layer exists, but request schemas and lifecycle states need hardening. |
-| UI workbench | Improved | Medium | Functional local workbench now has a static learning home for Pages and local-only run gating. |
+| UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface and local-only run gating. |
 | Beginner education | Good baseline | Medium | Beginner lessons and a no-model toy demo exist; in-browser toy simulation remains later work. |
 | Research grounding | Good | Low | Research notes exist; claims need tighter source-to-feature mapping. |
-| GitHub Pages | Workflow ready | Medium | Pages workflow and Pages build exist; live deployment still must be verified after push. |
+| GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, and frontend build are configured. |
 | Model support gating | Good baseline | Medium | Registry gates unsupported models; hook smoke-test automation is missing. |
-| Reproducibility | Partial | Medium | JSON artifacts exist; schema/versioning/run manifests need hardening. |
-| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, and local workbench path; live Pages verification remains. |
+| Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata and have CLI/API validation; run manifests and sweep artifacts still need hardening. |
+| Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
 
 ## Gap Backlog
 
@@ -76,20 +76,19 @@ Tracked hygiene:
    - Evidence: tests cover help, verify, toy demo, and showcase validation.
 
 5. Clarify dependency/install matrix.
-   - Why: current install pulls heavy ML/notebook/API dependencies together.
-   - Status: partially implemented.
-   - Evidence: README has no-model and advanced local paths; dependency extras remain future work.
+   - Why: public users should not install the full ML/notebook/API stack to run the tutorial path.
+   - Status: implemented in follow-up branch.
+   - Evidence: base install is dependency-light; `config`, `hf`, `api`, `media`, `notebooks`, and `dev` extras split heavier paths.
 
 ### P1: Should Fix For Strong Release
 
-1. Add artifact schema versioning and validation.
-2. Add prompt-only baseline/control runs.
-3. Add real sweep execution and sweep artifacts.
-4. Add download/copy buttons in the UI.
-5. Add hook smoke-test CLI/API.
-6. Add docs path tests for future lesson files.
-7. Add issue templates and PR template.
-8. Add changelog and release checklist.
+1. Add prompt-only baseline/control runs.
+2. Add real sweep execution and sweep artifacts.
+3. Add download/copy buttons in the UI.
+4. Add hook smoke-test CLI/API.
+5. Add docs path tests for future lesson files.
+6. Add issue templates and PR template.
+7. Add changelog and release checklist.
 
 ### P2: Later Differentiators
 
@@ -115,10 +114,8 @@ Strengths:
 Gaps:
 
 - Too much is packed into one long README.
-- Needs a shorter quick-start path.
-- Needs public site link once Pages is live.
-- Needs "no GPU/no model" path.
-- Needs clearer install variants.
+- Needs continued pruning into a dedicated docs site over time.
+- Has public site link, no GPU/no model path, and clearer install variants.
 
 ### `pyproject.toml`
 
@@ -131,9 +128,11 @@ Strengths:
 Gaps:
 
 - `requires-python = ">=3.13"` may be too narrow for open source ML users.
-- Heavy dependencies are all mandatory.
-- No console scripts.
-- No separate API/notebook/GPU extras.
+
+Current strengths:
+
+- Console script exists.
+- API/HF/media/notebook/dev extras exist.
 
 ### `.github/workflows/ci.yml`
 
@@ -144,10 +143,7 @@ Strengths:
 
 Gaps:
 
-- No frontend build.
-- No Node dependency cache.
-- No docs/artifact JSON validation.
-- No Pages deploy.
+- No hook smoke-test job for supported model adapters.
 
 ### `apps/web`
 
@@ -309,6 +305,6 @@ Recommended next slice after this branch lands:
 2. Set repository homepage to `https://smgpulse007.github.io/llm-steering/`.
 3. Decide whether to merge the branch into `main` immediately or open a review PR first.
 4. Split dependency extras only after a lazy-import pass across config/API/model modules.
-5. Add artifact schema versioning and prompt-only control runs.
+5. Add prompt-only control runs.
 
 The completed slice creates visible product value without waiting on model downloads or advanced research.

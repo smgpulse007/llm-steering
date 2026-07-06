@@ -31,3 +31,10 @@ def test_cli_validate_showcase_json(capsys) -> None:
     assert main(["showcase", "validate"]) == 0
     output = capsys.readouterr().out
     assert "pre_post_showcase.json" in output
+
+
+def test_cli_validate_versioned_artifacts(capsys) -> None:
+    assert main(["artifacts", "validate"]) == 0
+    output = capsys.readouterr().out
+    assert '"status": "ok"' in output
+    assert "use_case_showcase" in output

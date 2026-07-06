@@ -4,7 +4,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .config import project_root
+from .artifacts import (
+    PRE_POST_SHOWCASE_KIND,
+    RUNTIME_BASELINE_KIND,
+    USE_CASE_SHOWCASE_KIND,
+    validate_pre_post_showcase,
+    validate_runtime_baseline,
+    validate_use_case_showcase,
+)
 
 
 SHOWCASE_JSON_PATHS = (
@@ -13,6 +20,10 @@ SHOWCASE_JSON_PATHS = (
     "docs/showcase/use_case_showcase.json",
     "docs/showcase/ollama_vs_hf_baseline.json",
 )
+
+
+def project_root() -> Path:
+    return Path(__file__).resolve().parents[2]
 
 
 def _require_keys(payload: dict[str, Any], keys: set[str], *, path: str) -> list[str]:
@@ -34,54 +45,24 @@ def _validate_verified_sources(payload: Any, *, path: str) -> list[str]:
 
 
 def _validate_pre_post(payload: Any, *, path: str) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(payload, dict):
-        return [f"{path}: expected object"]
-    errors.extend(_require_keys(payload, {"pair", "hf_model_id", "layer", "coefficient", "samples"}, path=path))
-    samples = payload.get("samples")
-    if not isinstance(samples, list) or not samples:
-        errors.append(f"{path}: samples must be a non-empty list")
-        return errors
-    for index, sample in enumerate(samples):
-        if not isinstance(sample, dict):
-            errors.append(f"{path}.samples[{index}]: expected object")
-            continue
-        errors.extend(
-            _require_keys(
-                sample,
-                {"user_prompt", "baseline", "post_activation", "pre_activation"},
-                path=f"{path}.samples[{index}]",
-            )
-        )
+    errors = validate_pre_post_showcase(payload, path=path)
+    if isinstance(payload, dict) and payload.get("artifact_kind") != PRE_POST_SHOWCASE_KIND:
+        errors.append(f"{path}: expected {PRE_POST_SHOWCASE_KIND!r} artifact")
     return errors
 
 
 def _validate_use_cases(payload: Any, *, path: str) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(payload, dict):
-        return [f"{path}: expected object"]
-    use_cases = payload.get("use_cases")
-    if not isinstance(use_cases, list) or not use_cases:
-        errors.append(f"{path}: use_cases must be a non-empty list")
-        return errors
-    for index, use_case in enumerate(use_cases):
-        if not isinstance(use_case, dict):
-            errors.append(f"{path}.use_cases[{index}]: expected object")
-            continue
-        errors.extend(
-            _require_keys(
-                use_case,
-                {"slug", "title", "category", "user_prompt", "baseline", "steered", "layer", "coefficient"},
-                path=f"{path}.use_cases[{index}]",
-            )
-        )
+    errors = validate_use_case_showcase(payload, path=path)
+    if isinstance(payload, dict) and payload.get("artifact_kind") != USE_CASE_SHOWCASE_KIND:
+        errors.append(f"{path}: expected {USE_CASE_SHOWCASE_KIND!r} artifact")
     return errors
 
 
 def _validate_ollama_baseline(payload: Any, *, path: str) -> list[str]:
-    if not isinstance(payload, dict):
-        return [f"{path}: expected object"]
-    return _require_keys(payload, {"prompt", "hf_model_id", "status"}, path=path)
+    errors = validate_runtime_baseline(payload, path=path)
+    if isinstance(payload, dict) and payload.get("artifact_kind") != RUNTIME_BASELINE_KIND:
+        errors.append(f"{path}: expected {RUNTIME_BASELINE_KIND!r} artifact")
+    return errors
 
 
 VALIDATORS = {

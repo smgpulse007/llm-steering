@@ -716,6 +716,8 @@ code {
   display: grid;
   gap: 14px;
   margin-top: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .public-intro {
@@ -723,18 +725,47 @@ code {
   grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
   gap: 18px;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .public-intro p {
   max-width: 900px;
   color: #cbd7d2;
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .public-actions {
   display: grid;
   gap: 10px;
   justify-items: stretch;
+  min-width: 0;
+}
+
+.public-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.public-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(157, 240, 200, 0.22);
+  border-radius: 8px;
+  padding: 5px 9px;
+  color: #bde9d8;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.public-links a:hover {
+  border-color: rgba(157, 240, 200, 0.62);
+  background: rgba(48, 109, 94, 0.18);
 }
 
 .public-grid,
@@ -915,12 +946,39 @@ code {
   display: grid;
   grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .docs-list {
   align-self: start;
   display: grid;
   gap: 10px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-docs {
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+}
+
+.doc-group {
+  display: grid;
+  gap: 8px;
+}
+
+.doc-group > span {
+  color: #9ac3bd;
+  font-size: 0.72rem;
+  font-weight: 820;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.doc-group + .doc-group {
+  margin-top: 6px;
 }
 
 .doc-row {
@@ -956,6 +1014,13 @@ code {
 .doc-reader {
   max-height: calc(100vh - 180px);
   overflow: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-docs .doc-reader {
+  min-height: 540px;
+  max-height: 760px;
 }
 
 .research-list strong,
@@ -1026,7 +1091,7 @@ code {
 
 @media (max-width: 760px) {
   .app-shell {
-    width: 100vw;
+    width: 100%;
     padding: 10px;
     overflow-x: hidden;
   }
@@ -1034,9 +1099,14 @@ code {
   .topbar,
   .tabbar,
   .workspace-grid,
-  .learning-shell {
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
+  .learning-shell,
+  .public-home,
+  .public-intro,
+  .public-grid,
+  .showcase-grid,
+  .docs-grid {
+    width: 100%;
+    max-width: 100%;
   }
 
   .left-rail,
@@ -1044,9 +1114,11 @@ code {
   .right-rail,
   .glass-panel,
   .model-row,
-  .preset-card,
-  .candidate-card,
-  .doc-row {
+    .preset-card,
+    .candidate-card,
+    .doc-row,
+    .doc-reader,
+    .docs-list {
     width: 100%;
     max-width: 100%;
   }
@@ -1066,5 +1138,29 @@ code {
 
   .runtime-strip {
     justify-content: flex-start;
+  }
+
+  .runtime-strip span,
+  .tabbar button,
+  .subtabbar button {
+    white-space: normal;
+  }
+
+  .public-actions,
+  .public-actions .primary-button,
+  .public-actions .secondary-button {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .public-links a {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .markdown-body table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
   }
 }

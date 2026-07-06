@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
+from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from llm_steering.artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION
 from llm_steering.config import RuntimeSettings, load_prompt_pair
 from llm_steering.hf_runtime import generate_text, load_hf_model
+from llm_steering.metrics import output_delta_metrics, vector_diagnostics
+from llm_steering.model_registry import get_model_entry
 from llm_steering.steering import compute_steering_vector, generate_with_steering, save_vector
 
 
@@ -93,8 +98,36 @@ def main() -> None:
     vector_path = None
     if args.save_vector or args.vector_out is not None:
         vector_path = save_vector(artifact, args.vector_out or default_vector_path(loaded.model_id, pair.name, layer))
+    try:
+        model_status = get_model_entry(loaded.model_id).to_dict()
+    except KeyError:
+        model_status = {
+            "model_id": loaded.model_id,
+            "support_status": "unregistered",
+            "steering_ready": False,
+            "steering_notes": "Model was loaded through an override and is not in the registry.",
+        }
+    experiment_id = f"script_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid4().hex[:8]}"
 
     result = {
+        "schema_version": EXPERIMENT_SCHEMA_VERSION,
+        "artifact_kind": EXPERIMENT_KIND,
+        "experiment_id": experiment_id,
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "request": {
+            "model_id": loaded.model_id,
+            "system_prompt": pair.system_prompt,
+            "user_prompt": user_prompt,
+            "prompt_pairs": [{"positive": pair.positive, "negative": pair.negative}],
+            "layer": layer,
+            "coefficient": coefficient,
+            "apply_to": pair.apply_to,
+            "hook_stage": hook_stage,
+            "normalize": pair.normalize,
+            "max_new_tokens": max_new_tokens,
+            "do_sample": False,
+        },
+        "model_status": model_status,
         "pair": pair.name,
         "description": pair.description,
         "prompt_config": _serialize_repo_path(args.config),
@@ -113,8 +146,14 @@ def main() -> None:
         "vector_norm": float(artifact.vector.norm().item()),
         "baseline": baseline,
         "steered": steered,
+        "diagnostics": vector_diagnostics(artifact.vector).to_dict(),
+        "output_delta": output_delta_metrics(baseline, steered),
         "steering_delta_detected": baseline != steered,
         "vector_path": _serialize_repo_path(vector_path),
+        "artifact_path": _serialize_repo_path(args.result_out),
+        "reproduce_command": "python scripts/run_actadd.py "
+        f"--config {_serialize_repo_path(args.config)} --layer {layer} "
+        f"--coefficient {coefficient} --hook-stage {hook_stage} --max-new-tokens {max_new_tokens}",
         "vector_metadata": artifact.metadata,
     }
 

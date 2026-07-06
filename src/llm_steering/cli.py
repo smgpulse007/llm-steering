@@ -8,6 +8,7 @@ import subprocess
 import sys
 from typing import Any
 
+from .artifacts import validate_artifact_files
 from .showcase import validate_showcase_files
 from .toy_runtime import default_toy_run, run_toy_steering
 
@@ -120,6 +121,17 @@ def command_showcase(args: argparse.Namespace) -> int:
     return subprocess.call(command, cwd=ROOT)
 
 
+def command_artifacts(args: argparse.Namespace) -> int:
+    paths = args.paths or [
+        "docs/showcase/pre_post_showcase.json",
+        "docs/showcase/use_case_showcase.json",
+        "docs/showcase/ollama_vs_hf_baseline.json",
+    ]
+    payload = validate_artifact_files([str(ROOT / path) if not Path(path).is_absolute() else path for path in paths])
+    _print_json(payload)
+    return 0 if payload["status"] == "ok" else 1
+
+
 def command_validate_model(args: argparse.Namespace) -> int:
     from .introspection import registry_only_report
 
@@ -160,6 +172,12 @@ def build_parser() -> argparse.ArgumentParser:
     showcase.add_argument("--validate", action="store_true", help="Validate checked-in JSON artifacts.")
     showcase.add_argument("--skip-ollama", action="store_true", help="Forwarded to scripts/build_showcase.py.")
     showcase.set_defaults(func=command_showcase)
+
+    artifacts = subparsers.add_parser("artifacts", help="Validate versioned result and showcase artifacts.")
+    artifacts_subparsers = artifacts.add_subparsers(dest="action", required=True)
+    artifacts_validate = artifacts_subparsers.add_parser("validate", help="Validate artifact JSON files.")
+    artifacts_validate.add_argument("paths", nargs="*", help="Artifact JSON paths. Defaults to tracked public artifacts.")
+    artifacts_validate.set_defaults(func=command_artifacts)
 
     validate_model = subparsers.add_parser("validate-model", help="Report registry gating for a model id.")
     validate_model.add_argument("model_id")

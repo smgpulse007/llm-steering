@@ -14,6 +14,12 @@ if str(SRC) not in sys.path:
 
 from PIL import Image, ImageDraw, ImageFont
 
+from llm_steering.artifacts import (
+    PRE_POST_SHOWCASE_KIND,
+    RUNTIME_BASELINE_KIND,
+    SHOWCASE_SCHEMA_VERSION,
+    USE_CASE_SHOWCASE_KIND,
+)
 from llm_steering.config import RuntimeSettings, load_prompt_pair
 from llm_steering.hf_runtime import generate_text, load_hf_model
 from llm_steering.ollama_client import OllamaClient
@@ -365,6 +371,8 @@ def main() -> None:
         )
 
     showcase_payload: dict[str, Any] = {
+        "schema_version": SHOWCASE_SCHEMA_VERSION,
+        "artifact_kind": PRE_POST_SHOWCASE_KIND,
         "pair": pair.name,
         "description": pair.description,
         "prompt_config": _serialize_repo_path(args.config),
@@ -547,12 +555,16 @@ def main() -> None:
             combined_use_case_frames.extend([intro_frame, comparison_frame])
             combined_use_case_durations.extend([1700, 2200])
 
-        _save_json(output_dir / "use_case_showcase.json", {"use_cases": use_case_payloads})
+        _save_json(
+            output_dir / "use_case_showcase.json",
+            {
+                "schema_version": SHOWCASE_SCHEMA_VERSION,
+                "artifact_kind": USE_CASE_SHOWCASE_KIND,
+                "use_cases": use_case_payloads,
+            },
+        )
         if combined_use_case_frames:
             _save_gif(asset_dir / "starter_use_cases.gif", combined_use_case_frames, combined_use_case_durations)
-
-    if args.skip_ollama:
-        return
 
     ollama_payload: dict[str, Any] = {
         "prompt": "Explain activation steering in plain English in two sentences.",
@@ -560,6 +572,19 @@ def main() -> None:
         "ollama_model": settings.ollama_model,
         "hf_model_id": loaded.model_id,
     }
+
+    if args.skip_ollama:
+        _save_json(
+            output_dir / "ollama_vs_hf_baseline.json",
+            {
+                "schema_version": SHOWCASE_SCHEMA_VERSION,
+                "artifact_kind": RUNTIME_BASELINE_KIND,
+                **ollama_payload,
+                "status": "skipped",
+                "reason": "Skipped by --skip-ollama.",
+            },
+        )
+        return
 
     try:
         ollama = OllamaClient(base_url=settings.ollama_base_url, model=settings.ollama_model)
@@ -579,7 +604,14 @@ def main() -> None:
         ollama_payload["status"] = "skipped"
         ollama_payload["error"] = str(exc)
 
-    _save_json(output_dir / "ollama_vs_hf_baseline.json", ollama_payload)
+    _save_json(
+        output_dir / "ollama_vs_hf_baseline.json",
+        {
+            "schema_version": SHOWCASE_SCHEMA_VERSION,
+            "artifact_kind": RUNTIME_BASELINE_KIND,
+            **ollama_payload,
+        },
+    )
 
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+const customerSupportAsset = new URL("../../../../docs/assets/use_case_customer_support_empathy.gif", import.meta.url).href;
+const tutorAsset = new URL("../../../../docs/assets/use_case_tutor_encouragement.gif", import.meta.url).href;
+const releaseRiskAsset = new URL("../../../../docs/assets/use_case_release_risk_calibration.gif", import.meta.url).href;
+
 export const showcaseUseCases = [
   {
     slug: "customer_support_empathy",
@@ -9,8 +13,7 @@ export const showcaseUseCases = [
     steered:
       "I am so sorry to hear that your package arrived damaged; I can certainly help you arrange a replacement right away. Please provide your order number so I can process this for you immediately.",
     whatToNotice: "The steered reply keeps the same task but sounds more immediate and supportive.",
-    assetUrl:
-      "https://raw.githubusercontent.com/smgpulse007/llm-steering/main/docs/assets/use_case_customer_support_empathy.gif"
+    assetUrl: customerSupportAsset
   },
   {
     slug: "tutor_encouragement",
@@ -23,8 +26,7 @@ export const showcaseUseCases = [
     steered:
       "Think of dividing by a fraction as asking, \"How many of this fraction fit into the other number?\" To solve this, you flip the divisor to its reciprocal, which turns the division problem into a multiplication problem.",
     whatToNotice: "The steered answer becomes more scaffolded and explanatory instead of just terse correctness.",
-    assetUrl:
-      "https://raw.githubusercontent.com/smgpulse007/llm-steering/main/docs/assets/use_case_tutor_encouragement.gif"
+    assetUrl: tutorAsset
   },
   {
     slug: "release_risk_calibration",
@@ -37,8 +39,7 @@ export const showcaseUseCases = [
     steered:
       "**Recommendation:** Proceed with a phased rollout to a small segment of users next week to monitor performance and gather real-world feedback before a full launch.",
     whatToNotice: "The steered answer leans harder into phased rollout language and operational validation.",
-    assetUrl:
-      "https://raw.githubusercontent.com/smgpulse007/llm-steering/main/docs/assets/use_case_release_risk_calibration.gif"
+    assetUrl: releaseRiskAsset
   }
 ];
 

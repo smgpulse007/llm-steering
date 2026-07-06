@@ -10,18 +10,9 @@ import torch
 import torch.nn.functional as F
 
 from .hf_runtime import LoadedHFModel, generate_text, prepare_text_inputs
+from .layer_paths import LAYER_PATH_CANDIDATES
 
 
-LAYER_PATH_CANDIDATES = (
-    "model.language_model.layers",
-    "model.language_model.model.layers",
-    "model.layers",
-    "language_model.model.layers",
-    "language_model.layers",
-    "transformer.h",
-    "gpt_neox.layers",
-    "model.decoder.layers",
-)
 SUPPORTED_APPLY_TO = ("all_tokens", "last_token")
 SUPPORTED_HOOK_STAGES = ("post", "pre")
 

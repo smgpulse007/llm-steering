@@ -10,6 +10,7 @@ except ImportError:  # pragma: no cover - exercised only without optional API de
     FastAPI = None  # type: ignore[assignment]
     HTTPException = None  # type: ignore[assignment]
 
+from .artifacts import validate_artifact_payload
 from .config import RuntimeSettings
 from .docs_index import get_local_doc, list_local_docs
 from .experiments import (
@@ -124,7 +125,11 @@ def create_app() -> Any:
         result_path = default_result_path(experiment_id)
         if not result_path.exists():
             raise HTTPException(status_code=404, detail=f"No result artifact found for {experiment_id}.")
-        return json.loads(result_path.read_text(encoding="utf-8"))
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+        validation = validate_artifact_payload(payload, path=str(result_path))
+        if not validation["ok"]:
+            raise HTTPException(status_code=500, detail={"message": "Result artifact failed validation.", "validation": validation})
+        return payload
 
     return app
 

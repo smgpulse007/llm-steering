@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .layer_paths import LAYER_PATH_CANDIDATES
 from .model_registry import get_model_entry
-from .steering import LAYER_PATH_CANDIDATES
 
 
 @dataclass(frozen=True, slots=True)

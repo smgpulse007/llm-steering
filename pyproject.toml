@@ -29,10 +29,57 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = [
+dependencies = []
+
+[project.optional-dependencies]
+config = [
+  "huggingface_hub",
+  "python-dotenv",
+  "pyyaml",
+]
+hf = [
+  "accelerate",
+  "einops",
+  "huggingface_hub",
+  "python-dotenv",
+  "pyyaml",
+  "safetensors",
+  "sentencepiece",
+  "torch",
+  "tqdm",
+  "transformers",
+]
+api = [
+  "accelerate",
+  "einops",
+  "fastapi",
+  "huggingface_hub",
+  "python-dotenv",
+  "pyyaml",
+  "safetensors",
+  "sentencepiece",
+  "torch",
+  "tqdm",
+  "transformers",
+  "uvicorn[standard]",
+]
+media = [
+  "Pillow",
+]
+notebooks = [
+  "datasets",
+  "ipykernel",
+  "jupyterlab",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "scikit-learn",
+]
+dev = [
   "accelerate",
   "datasets",
   "einops",
+  "fastapi",
   "huggingface_hub",
   "ipykernel",
   "jupyterlab",
@@ -40,10 +87,9 @@ dependencies = [
   "numpy",
   "pandas",
   "Pillow",
-  "fastapi",
+  "pytest>=8.0",
   "python-dotenv",
   "pyyaml",
-  "rich",
   "safetensors",
   "scikit-learn",
   "sentencepiece",
@@ -51,11 +97,6 @@ dependencies = [
   "tqdm",
   "transformers",
   "uvicorn[standard]",
-]
-
-[project.optional-dependencies]
-dev = [
-  "pytest>=8.0",
 ]
 
 [project.scripts]

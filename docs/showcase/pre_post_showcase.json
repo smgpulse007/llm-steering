@@ -1,4 +1,6 @@
 {
+  "schema_version": "llm-steering.showcase.v1",
+  "artifact_kind": "pre_post_showcase",
   "pair": "sentiment_rich",
   "description": "Rich sentence-pair positive-vs-negative sentiment steering intended to produce more visible Gemma 4 shifts than the minimal Love/Hate demo.",
   "prompt_config": "configs\\prompt_pairs\\sentiment_rich.yaml",

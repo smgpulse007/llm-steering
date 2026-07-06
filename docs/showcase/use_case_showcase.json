@@ -1,4 +1,6 @@
 {
+  "schema_version": "llm-steering.showcase.v1",
+  "artifact_kind": "use_case_showcase",
   "use_cases": [
     {
       "slug": "customer_support_empathy",

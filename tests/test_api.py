@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from llm_steering.artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION
 from llm_steering.api import create_app
 from llm_steering.docs_index import LOCAL_DOCS
 from llm_steering.experiments import default_result_path
@@ -111,10 +112,42 @@ def test_api_get_experiment_reads_result_artifact() -> None:
     experiment_id = "test_api_artifact"
     path = default_result_path(experiment_id)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text('{"experiment_id": "test_api_artifact", "ok": true}', encoding="utf-8")
+    path.write_text(
+        """{
+  "schema_version": "llm-steering.experiment.v1",
+  "artifact_kind": "experiment_result",
+  "experiment_id": "test_api_artifact",
+  "created_at_utc": "2026-07-06T00:00:00+00:00",
+  "request": {"model_id": "google/gemma-4-E2B-it"},
+  "model_status": {"support_status": "supported"},
+  "baseline": "baseline",
+  "steered": "steered",
+  "diagnostics": {"vector_norm": 1.0},
+  "output_delta": {"changed": true},
+  "vector_path": null,
+  "artifact_path": "results/test_api_artifact.json",
+  "reproduce_command": "python scripts/run_actadd.py --config demo.yaml"
+}""",
+        encoding="utf-8",
+    )
     try:
         response = client.get(f"/api/experiments/{experiment_id}")
         assert response.status_code == 200
-        assert response.json()["ok"] is True
+        assert response.json()["schema_version"] == EXPERIMENT_SCHEMA_VERSION
+        assert response.json()["artifact_kind"] == EXPERIMENT_KIND
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_api_get_experiment_rejects_invalid_result_artifact() -> None:
+    client = TestClient(create_app())
+    experiment_id = "test_api_bad_artifact"
+    path = default_result_path(experiment_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('{"experiment_id": "test_api_bad_artifact", "ok": true}', encoding="utf-8")
+    try:
+        response = client.get(f"/api/experiments/{experiment_id}")
+        assert response.status_code == 500
+        assert response.json()["detail"]["validation"]["ok"] is False
     finally:
         path.unlink(missing_ok=True)

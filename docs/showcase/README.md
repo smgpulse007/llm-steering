@@ -8,6 +8,11 @@ This directory contains small, tracked artifacts intended for the public README 
 - `use_case_showcase.json` — curated starter-kit use cases with real baseline vs steered outputs
 - `ollama_vs_hf_baseline.json` — optional runtime baseline comparison between local Ollama and Hugging Face
 
+Each JSON artifact carries `schema_version` and `artifact_kind`. Validate them with:
+
+- `llm-steering artifacts validate`
+- `llm-steering showcase validate`
+
 The README also embeds GIF assets rendered in `docs/assets/`, including a terminal-style walkthrough that mirrors the commands shown to users.
 
 ## How they are generated
