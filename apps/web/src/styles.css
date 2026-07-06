@@ -87,6 +87,13 @@ h1 {
   letter-spacing: 0;
 }
 
+h2 {
+  margin: 0;
+  color: #f7fbf8;
+  font-size: clamp(1.25rem, 2vw, 1.85rem);
+  letter-spacing: 0;
+}
+
 .runtime-strip,
 .tabbar,
 .subtabbar,
@@ -705,6 +712,107 @@ code {
   margin-top: 14px;
 }
 
+.public-home {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.public-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 18px;
+  align-items: center;
+}
+
+.public-intro p {
+  max-width: 900px;
+  color: #cbd7d2;
+  line-height: 1.55;
+}
+
+.public-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: stretch;
+}
+
+.public-grid,
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.showcase-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lesson-steps {
+  margin: 0;
+  padding-left: 22px;
+  color: #dce7e2;
+  line-height: 1.55;
+}
+
+.lesson-steps li + li {
+  margin-top: 7px;
+}
+
+.command-block {
+  margin: 14px 0 0;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.26);
+  padding: 12px;
+  color: #bde9d8;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  line-height: 1.55;
+}
+
+.showcase-card {
+  display: grid;
+  gap: 10px;
+}
+
+.showcase-card img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.showcase-card strong {
+  color: #f7fbf8;
+  font-size: 1.02rem;
+}
+
+.showcase-card span {
+  color: #9ac3bd;
+  font-size: 0.8rem;
+  font-weight: 760;
+}
+
+.showcase-card p,
+.public-notes p {
+  color: #cbd7d2;
+  line-height: 1.48;
+  margin: 0;
+}
+
+.showcase-card details {
+  color: #dce7e2;
+}
+
+.showcase-card summary {
+  cursor: pointer;
+  color: #9df0c8;
+  font-weight: 760;
+}
+
 .subtabbar {
   margin-top: 0;
 }
@@ -893,6 +1001,9 @@ code {
 @media (max-width: 900px) {
   .workspace-grid,
   .learning-grid,
+  .public-intro,
+  .public-grid,
+  .showcase-grid,
   .docs-grid,
   .pair-row,
   .comparison-grid,
