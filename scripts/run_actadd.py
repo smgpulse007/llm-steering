@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 
 from llm_steering.artifacts import EXPERIMENT_KIND, EXPERIMENT_SCHEMA_VERSION
 from llm_steering.config import RuntimeSettings, load_prompt_pair
+from llm_steering.experiments import PromptPairSpec, build_prompt_only_system_prompt
 from llm_steering.hf_runtime import generate_text, load_hf_model
 from llm_steering.metrics import output_delta_metrics, vector_diagnostics
 from llm_steering.model_registry import get_model_entry
@@ -82,6 +83,17 @@ def main() -> None:
         max_new_tokens=max_new_tokens,
         do_sample=False,
     )
+    prompt_only_system_prompt = build_prompt_only_system_prompt(
+        pair.system_prompt,
+        (PromptPairSpec(positive=pair.positive, negative=pair.negative),),
+    )
+    prompt_only = generate_text(
+        loaded,
+        system_prompt=prompt_only_system_prompt,
+        user_prompt=user_prompt,
+        max_new_tokens=max_new_tokens,
+        do_sample=False,
+    )
     steered = generate_with_steering(
         loaded,
         system_prompt=pair.system_prompt,
@@ -145,9 +157,16 @@ def main() -> None:
         "max_new_tokens": max_new_tokens,
         "vector_norm": float(artifact.vector.norm().item()),
         "baseline": baseline,
+        "prompt_only": prompt_only,
         "steered": steered,
+        "prompt_control": {
+            "strategy": "positive_negative_prompt_pair_instructions",
+            "system_prompt": prompt_only_system_prompt,
+        },
         "diagnostics": vector_diagnostics(artifact.vector).to_dict(),
         "output_delta": output_delta_metrics(baseline, steered),
+        "control_delta": output_delta_metrics(baseline, prompt_only),
+        "steering_delta": output_delta_metrics(prompt_only, steered),
         "steering_delta_detected": baseline != steered,
         "vector_path": _serialize_repo_path(vector_path),
         "artifact_path": _serialize_repo_path(args.result_out),

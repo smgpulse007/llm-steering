@@ -378,7 +378,7 @@ Deliverables:
   - vector diagnostics
   - output metrics
   - environment summary
-- Prompt-only control run support.
+- Prompt-only control run support. Implemented in API/script artifacts and the workbench comparison UI.
 - Coefficient/layer sweep execution, not only planning.
 - Metrics table:
   - length delta
@@ -549,7 +549,7 @@ Exit criteria:
 
 ### Near-Term
 
-- Prompt-only control baseline.
+- Prompt-only control baseline. Implemented for experiment artifacts and the workbench.
 - Executed layer/coefficient sweeps.
 - Artifact schema validation.
 - No-model toy mode.

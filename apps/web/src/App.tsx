@@ -90,8 +90,15 @@ const demoResult: ExperimentResult = {
   created_at_utc: new Date().toISOString(),
   baseline:
     "## Customer reply\n\nI can check the order details and see what happened with the shipment. Please send the tracking number and order ID.\n\n- confirm the order\n- review the shipment\n- reply with the next step",
+  prompt_only:
+    "## Customer reply\n\nI am sorry the replacement part arrived late. I can check the order details and help identify the next step.\n\n- confirm the order\n- review the shipment\n- explain the next step",
   steered:
     "## Customer reply\n\nI am sorry the replacement part arrived late. I will check the order, confirm the delivery issue, and outline the fastest next step so this gets resolved cleanly.\n\n- confirm the order\n- review the shipment\n- provide a clear resolution path",
+  prompt_control: {
+    strategy: "positive_negative_prompt_pair_instructions",
+    system_prompt:
+      "Prompt-only steering control: follow the positive prompt-pair directions using ordinary instructions only."
+  },
   diagnostics: {
     vector_norm: 1,
     pair_count: 2,
@@ -106,6 +113,20 @@ const demoResult: ExperimentResult = {
     steered_chars: 247,
     char_delta: 57,
     word_jaccard: 0.42
+  },
+  control_delta: {
+    changed: true,
+    baseline_chars: 190,
+    steered_chars: 222,
+    char_delta: 32,
+    word_jaccard: 0.56
+  },
+  steering_delta: {
+    changed: true,
+    baseline_chars: 222,
+    steered_chars: 247,
+    char_delta: 25,
+    word_jaccard: 0.64
   },
   vector_path: "vectors/preview.pt",
   artifact_path: "results/preview.json",
@@ -295,7 +316,10 @@ export function App() {
     [selectedPresetId]
   );
 
-  const diff = useMemo(() => safeDiffTokens(result.baseline, result.steered), [result.baseline, result.steered]);
+  const activationDiff = useMemo(
+    () => safeDiffTokens(result.prompt_only, result.steered),
+    [result.prompt_only, result.steered]
+  );
 
   useEffect(() => {
     if (!selectedModel) return;
@@ -642,8 +666,21 @@ export function App() {
             </section>
 
             <div className="comparison-grid">
-              <OutputPane title="Baseline" text={result.baseline} tone="baseline" diffResult={autoDiff ? diff : null} side="left" />
-              <OutputPane title="Steered" text={result.steered} tone="steered" diffResult={autoDiff ? diff : null} side="right" />
+              <OutputPane title="Baseline" text={result.baseline} tone="baseline" diffResult={null} side="left" />
+              <OutputPane
+                title="Prompt-only Control"
+                text={result.prompt_only}
+                tone="prompt"
+                diffResult={autoDiff ? activationDiff : null}
+                side="left"
+              />
+              <OutputPane
+                title="Activation-steered"
+                text={result.steered}
+                tone="steered"
+                diffResult={autoDiff ? activationDiff : null}
+                side="right"
+              />
             </div>
           </section>
 
@@ -877,6 +914,8 @@ function ConsoleRail({
         <Metric label="Cosine mean" value={formatNumber(result.diagnostics.pairwise_cosine_mean)} />
         <Metric label="Separability" value={formatNumber(result.diagnostics.separability_score)} />
         <Metric label="Reliability" value={result.diagnostics.reliability_label} />
+        <Metric label="Prompt-only delta" value={`${result.control_delta.char_delta >= 0 ? "+" : ""}${result.control_delta.char_delta} chars`} />
+        <Metric label="Activation delta" value={`${result.steering_delta.char_delta >= 0 ? "+" : ""}${result.steering_delta.char_delta} chars`} />
       </section>
 
       <section className="glass-panel explain-panel">
@@ -890,6 +929,10 @@ function ConsoleRail({
         </p>
         <p>
           Layer {payload.layer}, {payload.hook_stage}-activation, {payload.apply_to.replace("_", " ")}.
+        </p>
+        <p>
+          Prompt-only control uses the same prompt-pair direction as ordinary instructions, then activation steering
+          compares against that control.
         </p>
         {introspection ? (
           <p className="warning-copy">
@@ -1107,7 +1150,7 @@ function OutputPane({
 }: {
   title: string;
   text: string;
-  tone: "baseline" | "steered";
+  tone: "baseline" | "prompt" | "steered";
   diffResult: DiffResult | null;
   side: "left" | "right";
 }) {
@@ -1121,7 +1164,7 @@ function OutputPane({
   return (
     <section className={`glass-panel output-pane ${tone}`}>
       <div className="panel-title">
-        {tone === "steered" ? <Sparkles size={18} /> : <AlertTriangle size={18} />}
+        {tone === "steered" ? <Sparkles size={18} /> : tone === "prompt" ? <ScrollText size={18} /> : <AlertTriangle size={18} />}
         <span>{title}</span>
       </div>
       <MarkdownOutput text={text} />

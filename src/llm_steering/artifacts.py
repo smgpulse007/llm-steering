@@ -56,9 +56,13 @@ def validate_experiment_result(payload: Any, *, path: str = "artifact") -> list[
                 "request",
                 "model_status",
                 "baseline",
+                "prompt_only",
                 "steered",
+                "prompt_control",
                 "diagnostics",
                 "output_delta",
+                "control_delta",
+                "steering_delta",
                 "reproduce_command",
             },
             path=path,
@@ -72,6 +76,12 @@ def validate_experiment_result(payload: Any, *, path: str = "artifact") -> list[
         errors.append(f"{path}.diagnostics: expected object")
     if not isinstance(payload.get("output_delta"), dict):
         errors.append(f"{path}.output_delta: expected object")
+    if not isinstance(payload.get("prompt_control"), dict):
+        errors.append(f"{path}.prompt_control: expected object")
+    if not isinstance(payload.get("control_delta"), dict):
+        errors.append(f"{path}.control_delta: expected object")
+    if not isinstance(payload.get("steering_delta"), dict):
+        errors.append(f"{path}.steering_delta: expected object")
     return errors
 
 

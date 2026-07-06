@@ -121,9 +121,13 @@ def test_api_get_experiment_reads_result_artifact() -> None:
   "request": {"model_id": "google/gemma-4-E2B-it"},
   "model_status": {"support_status": "supported"},
   "baseline": "baseline",
+  "prompt_only": "prompt-only",
   "steered": "steered",
+  "prompt_control": {"strategy": "positive_negative_prompt_pair_instructions", "system_prompt": "Prompt-only steering control."},
   "diagnostics": {"vector_norm": 1.0},
   "output_delta": {"changed": true},
+  "control_delta": {"changed": true},
+  "steering_delta": {"changed": true},
   "vector_path": null,
   "artifact_path": "results/test_api_artifact.json",
   "reproduce_command": "python scripts/run_actadd.py --config demo.yaml"

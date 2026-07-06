@@ -21,7 +21,7 @@ The Console must let a user:
 - edit system prompt, user prompt, and prompt-pair dataset
 - tune steering controls
 - run an experiment through the API
-- inspect baseline and steered outputs as rendered Markdown
+- inspect baseline, prompt-only control, and activation-steered outputs as rendered Markdown
 - inspect automatic diff highlights without losing rendered Markdown
 - view diagnostics, artifacts, and logs
 
@@ -62,7 +62,7 @@ Model responses must render like a normal Markdown preview:
 - tables
 - bold/italic formatting
 
-Diff highlighting must not replace the main rendered answer. It should be a secondary view or panel that helps compare the baseline and steered outputs. Auto diff should remain available for long responses by falling back from exact word-level diffing to line-level or streaming diffing instead of skipping the comparison.
+Diff highlighting must not replace the main rendered answer. It should be a secondary view or panel that helps compare prompt-only control output with activation-steered output. Auto diff should remain available for long responses by falling back from exact word-level diffing to line-level or streaming diffing instead of skipping the comparison.
 
 ## Control Knob Explanations
 
@@ -116,9 +116,11 @@ The API must expose:
 Experiment results must include:
 
 - baseline text
+- prompt-only control text
 - steered text
+- prompt control metadata, including the exact instruction-only control prompt
 - vector diagnostics
-- output delta metrics
+- baseline-to-steered, baseline-to-prompt-control, and prompt-control-to-steered delta metrics
 - vector artifact path
 - result artifact path
 - reproduction command
@@ -132,7 +134,7 @@ Support readiness means more than appearing in the picker. A model becomes suppo
 3. Hidden states are available.
 4. Transformer layer discovery succeeds.
 5. A hook smoke test passes.
-6. A short baseline vs steered experiment can export artifacts.
+6. A short baseline vs prompt-only vs steered experiment can export artifacts.
 7. The README/support matrix reflects the exact validation state.
 
 Recommended next targets:

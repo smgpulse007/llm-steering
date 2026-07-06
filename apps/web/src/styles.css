@@ -441,8 +441,15 @@ button:disabled {
 .pair-row,
 .comparison-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.pair-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.comparison-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .pair-row + .pair-row {
@@ -457,6 +464,10 @@ button:disabled {
 
 .output-pane.baseline {
   border-color: rgba(209, 164, 92, 0.35);
+}
+
+.output-pane.prompt {
+  border-color: rgba(159, 214, 255, 0.34);
 }
 
 .output-pane.steered {
@@ -1114,11 +1125,11 @@ code {
   .right-rail,
   .glass-panel,
   .model-row,
-    .preset-card,
-    .candidate-card,
-    .doc-row,
-    .doc-reader,
-    .docs-list {
+  .preset-card,
+  .candidate-card,
+  .doc-row,
+  .doc-reader,
+  .docs-list {
     width: 100%;
     max-width: 100%;
   }

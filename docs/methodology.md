@@ -13,7 +13,7 @@ The repository currently focuses on **inference-time activation steering** for G
 3. Construct a steering direction from the contrast.
 4. Scale the direction by a coefficient $\alpha$.
 5. Inject the direction into the forward pass at a chosen layer and token scope.
-6. Compare baseline and steered generations.
+6. Compare baseline, prompt-only control, and activation-steered generations.
 
 ## Steering-vector math
 
@@ -124,6 +124,7 @@ This tends to produce stronger visible effects, especially for small local demos
 ### Generation
 
 - `generate_text()` produces the baseline output.
+- `build_prompt_only_system_prompt()` converts the same prompt-pair direction into an ordinary instruction-only control.
 - `generate_with_steering()` applies the hook during generation and then calls the same runtime.
 - `scripts/run_actadd.py` is the main CLI entry point for single experiments.
 
@@ -160,11 +161,12 @@ This repository exposes both so you can compare them directly in the showcase as
 For a serious study rather than a one-off demo, use the following sequence:
 
 1. baseline generation
-2. post-activation steering
-3. pre-activation steering
-4. layer sweep
-5. coefficient sweep
-6. off-target prompt checks
-7. compact artifact export with metadata
+2. prompt-only control using the same behavioral direction as ordinary instructions
+3. post-activation steering
+4. pre-activation steering
+5. layer sweep
+6. coefficient sweep
+7. off-target prompt checks
+8. compact artifact export with metadata
 
 That progression keeps the experiments interpretable while leaving room for later work such as CAA, SEA, activation patching, and SAE-guided methods.

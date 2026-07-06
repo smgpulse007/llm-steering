@@ -48,7 +48,7 @@ Tracked hygiene:
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
 | CI | Improved | Medium | Python tests, no-model CLI smoke, showcase validation, and frontend build are configured. |
 | Model support gating | Good baseline | Medium | Registry gates unsupported models; hook smoke-test automation is missing. |
-| Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata and have CLI/API validation; run manifests and sweep artifacts still need hardening. |
+| Reproducibility | Improved | Medium | JSON artifacts now carry schema/version metadata, prompt-only controls, comparison deltas, and CLI/API validation; run manifests and sweep artifacts still need hardening. |
 | Portfolio readiness | Improved | Medium | README has badges, public URL, no-model path, local workbench path, and a docs-first Pages surface. |
 
 ## Gap Backlog
@@ -82,13 +82,16 @@ Tracked hygiene:
 
 ### P1: Should Fix For Strong Release
 
-1. Add prompt-only baseline/control runs.
-2. Add real sweep execution and sweep artifacts.
-3. Add download/copy buttons in the UI.
-4. Add hook smoke-test CLI/API.
-5. Add docs path tests for future lesson files.
-6. Add issue templates and PR template.
-7. Add changelog and release checklist.
+1. Add real sweep execution and sweep artifacts.
+2. Add download/copy buttons in the UI.
+3. Add hook smoke-test CLI/API.
+4. Add docs path tests for future lesson files.
+5. Add issue templates and PR template.
+6. Add changelog and release checklist.
+
+Completed follow-up:
+
+- Prompt-only baseline/control runs are now included in API/script experiment artifacts and the workbench comparison UI.
 
 ### P2: Later Differentiators
 

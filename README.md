@@ -75,9 +75,9 @@ The repo now includes a functional steering workbench shell for the open-source 
 - prompt-pair dataset editor
 - steering controls for layer, coefficient, hook stage, token scope, normalization, and decoding settings
 - preset use cases for support, tutoring, launch risk, and code review
-- baseline vs steered comparison panes
+- baseline, prompt-only control, and activation-steered comparison panes
 - ChatGPT-style markdown rendering for model output
-- always-on hybrid word/line diff highlighting for baseline vs steered output
+- hybrid word/line diff highlighting for prompt-only vs activation-steered output
 - vector diagnostics and reliability labels
 - separate explainability tab with math, architecture flow, research trail, and model support roadmap
 - artifact drawer with reproducible command metadata
@@ -111,7 +111,7 @@ The GitHub Pages build runs in static mode. It teaches the beginner path and dis
 
 ## Real starter-kit use cases
 
-The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic “vector playground.”
+The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic "vector playground."
 
 These examples are generated from real model runs and are meant to show practical reasons someone might care about activation steering in the first place.
 
@@ -314,8 +314,9 @@ If you want to adapt this repo beyond Gemma 4, the practical workflow is:
 2. set `HF_MODEL_ID` and `HF_MODEL_LOCAL_DIR` in `.env`
 3. verify that the transformer layers are discovered by `locate_transformer_layers()` in `src/llm_steering/steering.py`
 4. copy `configs/prompt_pairs/starter_prompt_pair_example.yaml` and edit it for your use case
-5. sweep layer and coefficient values instead of trusting defaults forever
-6. export a compact public artifact showing baseline vs steered behavior
+5. compare baseline, prompt-only control, and activation-steered generations
+6. sweep layer and coefficient values instead of trusting defaults forever
+7. export a compact public artifact showing the three-way comparison
 
 The repo already supports several common decoder-layer layouts through `LAYER_PATH_CANDIDATES`, so swapping models is not purely theoretical. The easiest path is still to start with Gemma 4 E2B, then try other open-source SLMs that expose a compatible transformer stack.
 

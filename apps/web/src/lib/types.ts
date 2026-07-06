@@ -47,11 +47,24 @@ export type ExperimentPayload = {
   top_k: number;
 };
 
+export type OutputDelta = {
+  changed: boolean;
+  baseline_chars: number;
+  steered_chars: number;
+  char_delta: number;
+  word_jaccard: number;
+};
+
 export type ExperimentResult = {
   experiment_id: string;
   created_at_utc: string;
   baseline: string;
+  prompt_only: string;
   steered: string;
+  prompt_control: {
+    strategy: string;
+    system_prompt: string;
+  };
   diagnostics: {
     vector_norm: number;
     pair_count: number;
@@ -60,13 +73,9 @@ export type ExperimentResult = {
     separability_score: number | null;
     reliability_label: string;
   };
-  output_delta: {
-    changed: boolean;
-    baseline_chars: number;
-    steered_chars: number;
-    char_delta: number;
-    word_jaccard: number;
-  };
+  output_delta: OutputDelta;
+  control_delta: OutputDelta;
+  steering_delta: OutputDelta;
   vector_path: string | null;
   artifact_path: string | null;
   reproduce_command: string;

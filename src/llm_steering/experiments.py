@@ -71,9 +71,13 @@ class ExperimentResult:
     request: dict[str, object]
     model_status: dict[str, object]
     baseline: str
+    prompt_only: str
     steered: str
+    prompt_control: dict[str, object]
     diagnostics: dict[str, object]
     output_delta: dict[str, object]
+    control_delta: dict[str, object]
+    steering_delta: dict[str, object]
     vector_path: str | None
     artifact_path: str | None
     reproduce_command: str
@@ -135,6 +139,23 @@ def _build_vector(loaded: LoadedHFModel, request: ExperimentRequest) -> Steering
     )
 
 
+def build_prompt_only_system_prompt(system_prompt: str, prompt_pairs: tuple[PromptPairSpec, ...]) -> str:
+    positive_lines = [pair.positive.strip() for pair in prompt_pairs if pair.positive.strip()]
+    negative_lines = [pair.negative.strip() for pair in prompt_pairs if pair.negative.strip()]
+    parts = []
+    if system_prompt.strip():
+        parts.append(system_prompt.strip())
+    parts.append(
+        "Prompt-only steering control: follow the behavioral directions below using ordinary "
+        "instructions only. Do not assume any hidden-state or activation intervention."
+    )
+    if positive_lines:
+        parts.append("Move the answer toward:\n" + "\n".join(f"- {line}" for line in positive_lines))
+    if negative_lines:
+        parts.append("Avoid moving the answer toward:\n" + "\n".join(f"- {line}" for line in negative_lines))
+    return "\n\n".join(parts)
+
+
 def build_vector_artifact(
     request: ExperimentRequest,
     *,
@@ -188,6 +209,17 @@ def run_experiment(
         top_p=request.top_p,
         top_k=request.top_k,
     )
+    prompt_only_system_prompt = build_prompt_only_system_prompt(request.system_prompt, request.prompt_pairs)
+    prompt_only = generate_text(
+        loaded_model,
+        system_prompt=prompt_only_system_prompt,
+        user_prompt=request.user_prompt,
+        max_new_tokens=request.max_new_tokens,
+        do_sample=request.do_sample,
+        temperature=request.temperature,
+        top_p=request.top_p,
+        top_k=request.top_k,
+    )
     steered = generate_with_steering(
         loaded_model,
         system_prompt=request.system_prompt,
@@ -221,9 +253,16 @@ def run_experiment(
         },
         model_status=entry.to_dict(),
         baseline=baseline,
+        prompt_only=prompt_only,
         steered=steered,
+        prompt_control={
+            "strategy": "positive_negative_prompt_pair_instructions",
+            "system_prompt": prompt_only_system_prompt,
+        },
         diagnostics=vector_diagnostics(artifact.vector).to_dict(),
         output_delta=output_delta_metrics(baseline, steered),
+        control_delta=output_delta_metrics(baseline, prompt_only),
+        steering_delta=output_delta_metrics(prompt_only, steered),
         vector_path=_repo_relative(vector_path),
         artifact_path=_repo_relative(artifact_path),
         reproduce_command=build_cli_command(request),
