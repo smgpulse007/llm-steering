@@ -654,7 +654,7 @@ export function App() {
           onSelectDoc={(docId, sectionId) => selectDoc(docId, false, sectionId)}
           docContent={docContent}
           onOpenConsole={openConsole}
-          onOpenDocs={() => selectDoc(DEFAULT_DOC_ID, true)}
+          onOpenDocs={(docId = DEFAULT_DOC_ID) => selectDoc(docId, true)}
         />
       ) : activeTab === "console" ? (
         <section className="workspace-grid">
@@ -1110,7 +1110,7 @@ function LearningHome({
   onSelectDoc: (docId: string, sectionId?: string) => void;
   docContent: LocalDocContent | null;
   onOpenConsole: () => void;
-  onOpenDocs: () => void;
+  onOpenDocs: (docId?: string) => void;
 }) {
   return (
     <section className="public-home">
@@ -1124,7 +1124,7 @@ function LearningHome({
             local workbench connects to FastAPI and a supported Hugging Face model.
           </p>
           <div className="public-actions">
-            <button className="primary-button" onClick={onOpenDocs}>
+            <button className="primary-button" onClick={() => onOpenDocs()}>
               <GraduationCap size={16} /> Start Lessons
             </button>
             <button className="secondary-button compact" onClick={onOpenConsole}>
@@ -1173,6 +1173,56 @@ function LearningHome({
           <span>Validation gates</span>
           <strong>Artifacts + smoke tests</strong>
         </article>
+      </section>
+
+      <section className="public-journey" aria-label="Suggested learning path">
+        <div className="section-kicker journey-kicker">
+          <p className="eyebrow">guided path</p>
+          <h2>Start with foundations, then move into experiments.</h2>
+          <p>
+            The public site is a reader-first entry point. Each step opens the bundled docs below; the Console tab is
+            the local path for real activation edits once the API and model are available.
+          </p>
+        </div>
+        <div className="journey-grid">
+          <article className="glass-panel journey-card">
+            <span>01</span>
+            <strong>Foundations</strong>
+            <p>Tokens, layers, residual stream, prompt steering, and why prompt-only controls remain the first baseline.</p>
+            <div className="journey-actions">
+              <button onClick={() => onOpenDocs("lesson_transformers")}>Transformer basics</button>
+              <button onClick={() => onOpenDocs("lesson_prompt_steering")}>Prompt steering</button>
+            </div>
+          </article>
+          <article className="glass-panel journey-card">
+            <span>02</span>
+            <strong>Activation Methods</strong>
+            <p>Activation steering, ActAdd vectors, CAA-style mean differences, hook stage, and token scope.</p>
+            <div className="journey-actions">
+              <button onClick={() => onOpenDocs("lesson_activation_steering")}>Activation steering</button>
+              <button onClick={() => onOpenDocs("lesson_actadd")}>ActAdd</button>
+              <button onClick={() => onOpenDocs("lesson_caa")}>CAA</button>
+            </div>
+          </article>
+          <article className="glass-panel journey-card">
+            <span>03</span>
+            <strong>Evaluation Loop</strong>
+            <p>Compare baseline, prompt-only control, steered output, layer sweeps, diagnostics, and saved artifacts.</p>
+            <div className="journey-actions">
+              <button onClick={() => onOpenDocs("lesson_evaluation")}>Evaluation</button>
+              <button onClick={() => onOpenDocs("methodology")}>Methodology</button>
+            </div>
+          </article>
+          <article className="glass-panel journey-card">
+            <span>04</span>
+            <strong>Local Workbench</strong>
+            <p>Use the console after local setup to run supported model experiments and export reproduction packets.</p>
+            <div className="journey-actions">
+              <button onClick={onOpenConsole}>Open Console</button>
+              <button onClick={() => onOpenDocs("lesson_advanced_methods")}>Advanced methods</button>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section className="section-kicker">

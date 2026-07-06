@@ -1061,6 +1061,77 @@ code {
   overflow-wrap: anywhere;
 }
 
+.public-journey {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.8fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.journey-kicker {
+  position: sticky;
+  top: 16px;
+}
+
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.journey-card {
+  display: grid;
+  grid-template-rows: auto auto minmax(72px, auto) auto;
+  gap: 8px;
+  min-height: 224px;
+}
+
+.journey-card > span {
+  width: fit-content;
+  border: 1px solid rgba(157, 240, 200, 0.22);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: #9ac3bd;
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
+.journey-card strong {
+  color: #f7fbf8;
+  font-size: 1.08rem;
+}
+
+.journey-card p {
+  margin: 0;
+  color: #cbd7d2;
+  line-height: 1.48;
+}
+
+.journey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: end;
+}
+
+.journey-actions button {
+  min-height: 32px;
+  border: 1px solid rgba(157, 240, 200, 0.2);
+  border-radius: 8px;
+  background: rgba(48, 109, 94, 0.12);
+  color: #dce8e3;
+  padding: 6px 9px;
+  font-size: 0.8rem;
+  font-weight: 760;
+}
+
+.journey-actions button:hover,
+.journey-actions button:focus-visible {
+  border-color: rgba(157, 240, 200, 0.62);
+  background: rgba(48, 109, 94, 0.2);
+  outline: none;
+}
+
 .section-kicker {
   display: grid;
   gap: 6px;
@@ -1465,6 +1536,8 @@ code {
   .workspace-grid,
   .learning-grid,
   .public-hero,
+  .public-journey,
+  .journey-grid,
   .public-grid,
   .showcase-grid,
   .public-proof-strip,
@@ -1487,6 +1560,18 @@ code {
     height: 24px;
     justify-self: center;
     background: linear-gradient(180deg, rgba(157, 240, 200, 0.1), rgba(157, 240, 200, 0.8));
+  }
+
+  .docs-list,
+  .doc-outline,
+  .doc-reader,
+  .public-docs .doc-reader {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .public-docs .doc-reader {
+    min-height: 0;
   }
 }
 
@@ -1563,6 +1648,15 @@ code {
   .public-links a {
     max-width: 100%;
     white-space: normal;
+  }
+
+  .journey-kicker {
+    position: static;
+  }
+
+  .journey-actions,
+  .journey-actions button {
+    width: 100%;
   }
 
   .sweep-actions,

@@ -21,9 +21,10 @@ Repository:
 Local validation:
 
 - `.venv` Python: 3.13.1
-- Python tests: 34 passed
+- Python tests: 54 passed, 3 warnings
 - Frontend production build: passed
 - Pages production build with `/llm-steering/` base: passed
+- Pages asset-base validation: passed
 - No-model CLI verification: passed
 - Toy demo CLI: passed
 - Structural showcase/source JSON validation: passed
@@ -42,7 +43,7 @@ Tracked hygiene:
 | Python package | Improved | Medium | Editable base install exposes `llm-steering`; heavy HF/API/media/notebook dependencies are split into extras. |
 | CLI | Strong baseline | Medium | Product CLI now covers verify, toy demo, API serving, sweep plan/run, showcase validation/build, artifact validation, and model registry validation. |
 | API | Good baseline | Medium | FastAPI layer exists, but request schemas and lifecycle states need hardening. |
-| UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface, local-only run gating, and sweep controls. |
+| UI workbench | Improved | Medium | Functional local workbench now has a docs-first Pages surface, guided public learning path, local-only run gating, and sweep controls. |
 | Beginner education | Good baseline | Medium | Beginner lessons and a no-model toy demo exist; in-browser toy simulation remains later work. |
 | Research grounding | Good | Low | Research notes exist; claims need tighter source-to-feature mapping. |
 | GitHub Pages | Live baseline | Medium | Pages workflow and Pages build exist; live deployment was verified on `main`; this branch keeps Pages deployment scoped to `main`. |
@@ -169,9 +170,11 @@ Strengths:
 - Model registry fallback.
 - API client exists.
 - Markdown rendering and safe diff logic exist.
+- Public Pages home has a guided foundations-to-experiments path before the full docs reader.
 - Public docs reader has document groups, search/filter, an in-document outline, and stable section links.
 - Static Pages mode bundles the same docs inventory as the local API for public browsing.
 - Output panes and artifact rail include copy/download actions for review handoff.
+- Mobile docs layout uses page scrolling rather than nested scroll traps.
 
 Gaps:
 
@@ -323,7 +326,7 @@ Recommended next slice after this branch lands:
 1. Verify GitHub Actions and Pages deployment after push.
 2. Set repository homepage to `https://smgpulse007.github.io/llm-steering/`.
 3. Decide whether to merge the branch into `main` immediately or open a review PR first.
-4. Split dependency extras only after a lazy-import pass across config/API/model modules.
-5. Add prompt-only control runs.
+4. Add the release checklist and changelog that are still open in the P1/P8 backlog.
+5. Code-split the large Markdown chunk once the Pages/docs shape is stable.
 
-The completed slice creates visible product value without waiting on model downloads or advanced research.
+The completed slices create visible product value without waiting on model downloads or advanced research.

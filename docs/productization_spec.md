@@ -27,6 +27,7 @@ The repo already contains meaningful product surface:
 - FastAPI API in `src/llm_steering/api.py`.
 - React/Vite workbench under `apps/web`.
 - Local documentation rendered through the API and static Pages fallback.
+- Public Pages home with a guided foundations-to-experiments learning path.
 - Docs reader with grouped documents, table-of-contents extraction, and hashable section links.
 - Public GIF/JSON showcase artifacts under `docs/assets` and `docs/showcase`.
 - Research archive under `research`.
@@ -35,9 +36,10 @@ The repo already contains meaningful product surface:
 Local validation on 2026-07-05:
 
 - `.\.venv\Scripts\python.exe --version`: Python 3.13.1
-- `.\.venv\Scripts\python.exe -m pytest`: 43 tests passed after the docs-outline slice
+- `.\.venv\Scripts\python.exe -m pytest`: 54 tests passed, 3 warnings
 - `cd apps/web; npm.cmd run build`: production build passed
 - `cd apps/web; npm.cmd run build:pages`: Pages production build passed with `/llm-steering/` asset base
+- `.\.venv\Scripts\python.exe scripts\validate_pages_build.py`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli verify --no-model`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli demo --toy --json`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli showcase validate`: passed
@@ -290,6 +292,7 @@ Deliverables:
 - Home page with:
   - project thesis
   - beginner path entry
+  - guided foundations-to-experiments journey
   - advanced workbench preview
   - research map
   - model support matrix
