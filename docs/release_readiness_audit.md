@@ -28,7 +28,7 @@ Local validation:
 - No-model CLI verification: passed
 - Toy demo CLI: passed
 - Structural showcase/source JSON validation: passed
-- Frontend build warning: `markdown` chunk exceeds 500 kB after minification
+- Frontend chunk split: Markdown renderer dependencies build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
 
 Tracked hygiene:
 
@@ -181,10 +181,10 @@ Strengths:
 - Static Pages mode bundles the same docs inventory as the local API for public browsing.
 - Output panes and artifact rail include copy/download actions for review handoff.
 - Mobile docs layout uses page scrolling rather than nested scroll traps.
+- Markdown renderer dependencies are split into smaller Vite chunks.
 
 Gaps:
 
-- Large Markdown chunk warning.
 - Run lifecycle is still too coarse.
 - Sweep result interpretation is still mostly metric/table based.
 
@@ -332,7 +332,7 @@ Recommended next slice after this branch lands:
 1. Verify GitHub Actions and Pages deployment after push.
 2. Set repository homepage to `https://smgpulse007.github.io/llm-steering/`.
 3. Decide whether to merge the branch into `main` immediately or open a review PR first.
-4. Code-split the large Markdown chunk once the Pages/docs shape is stable.
-5. Run and document a clean-environment install test.
+4. Run and document a clean-environment install test.
+5. Add stronger run-lifecycle states and sweep interpretation copy in the workbench.
 
 The completed slices create visible product value without waiting on model downloads or advanced research.

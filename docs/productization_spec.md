@@ -44,7 +44,7 @@ Local validation on 2026-07-05:
 - `.\.venv\Scripts\python.exe -m llm_steering.cli verify --no-model`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli demo --toy --json`: passed
 - `.\.venv\Scripts\python.exe -m llm_steering.cli showcase validate`: passed
-- Frontend build warning: Markdown chunk is larger than 500 kB after minification; this is a later code-splitting task
+- Frontend chunk split: Markdown renderer dependencies now build as `markdown-core`, `markdown-highlight`, and `markdown-math` chunks below Vite's warning threshold
 - GitHub Pages workflow and static build exist; live action status should be rechecked after this branch is pushed or merged
 
 ## 3. Product Definition

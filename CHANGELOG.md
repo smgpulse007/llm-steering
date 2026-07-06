@@ -9,6 +9,7 @@
 - Split Python dependency extras so the base install remains lightweight while API, Hugging Face, media, notebook, and dev paths stay opt-in.
 - Expanded CI and Pages automation to build the web app, build the Pages app, and validate the Pages asset base before deployment.
 - Added issue/PR templates, release-readiness audit updates, and a release checklist for future public releases.
+- Split Markdown renderer dependencies into smaller Vite chunks so production and Pages builds avoid the previous large Markdown chunk warning.
 
 ## 0.1.0
 
