@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import json
 from pathlib import Path
 import shutil
@@ -132,11 +133,41 @@ def command_artifacts(args: argparse.Namespace) -> int:
     return 0 if payload["status"] == "ok" else 1
 
 
-def command_sweep(args: argparse.Namespace) -> int:
-    from .experiments import request_from_mapping, run_sweep, sweep_plan
+def _read_experiment_request(path: Path):
+    from .experiments import request_from_mapping
 
-    payload = json.loads(args.request.read_text(encoding="utf-8"))
-    base_request = request_from_mapping(payload)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("request JSON must be an object")
+    if payload.get("artifact_kind") == "experiment_result":
+        payload = payload.get("request")
+    elif payload.get("artifact_kind") == "sweep_result":
+        payload = payload.get("base_request")
+    if not isinstance(payload, dict):
+        raise ValueError("experiment artifact must contain a request object")
+    return request_from_mapping(payload)
+
+
+def command_run(args: argparse.Namespace) -> int:
+    from .experiments import run_experiment
+
+    try:
+        request = _read_experiment_request(args.request)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"Invalid experiment request: {exc}", file=sys.stderr)
+        return 2
+    if args.plan_only:
+        _print_json({"status": "planned", "request": asdict(request)})
+        return 0
+    result = run_experiment(request, save_artifacts=not args.no_save)
+    _print_json(result.to_dict())
+    return 0
+
+
+def command_sweep(args: argparse.Namespace) -> int:
+    from .experiments import run_sweep, sweep_plan
+
+    base_request = _read_experiment_request(args.request)
     if args.plan_only:
         planned = sweep_plan(base_request, layers=args.layers, coefficients=args.coefficients)
         _print_json(
@@ -150,6 +181,7 @@ def command_sweep(args: argparse.Namespace) -> int:
                         "coefficient": request.coefficient,
                         "hook_stage": request.hook_stage,
                         "apply_to": request.apply_to,
+                        "seed": request.seed,
                     }
                     for request in planned
                 ],
@@ -228,6 +260,12 @@ def build_parser() -> argparse.ArgumentParser:
     artifacts_validate = artifacts_subparsers.add_parser("validate", help="Validate artifact JSON files.")
     artifacts_validate.add_argument("paths", nargs="*", help="Artifact JSON paths. Defaults to tracked public artifacts.")
     artifacts_validate.set_defaults(func=command_artifacts)
+
+    run = subparsers.add_parser("run", help="Run or replay a complete experiment request with paired sampling.")
+    run.add_argument("--request", type=Path, required=True, help="Request JSON or a saved experiment result.")
+    run.add_argument("--plan-only", action="store_true", help="Validate and print the request without loading a model.")
+    run.add_argument("--no-save", action="store_true", help="Emit JSON without writing result/vector artifacts.")
+    run.set_defaults(func=command_run)
 
     sweep = subparsers.add_parser("sweep", help="Plan or execute a layer/coefficient experiment sweep.")
     sweep.add_argument("--request", type=Path, required=True, help="JSON file matching the experiment API payload.")

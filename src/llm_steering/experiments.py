@@ -21,6 +21,7 @@ from .config import RuntimeSettings, project_root
 from .hf_runtime import LoadedHFModel, generate_text, load_hf_model
 from .metrics import output_delta_metrics, vector_diagnostics
 from .model_registry import get_model_entry
+from .sampling import paired_torch_seed, validate_seed
 from .steering import (
     SteeringVectorArtifact,
     compute_mean_difference_vector,
@@ -67,6 +68,10 @@ class ExperimentRequest:
     temperature: float = 1.0
     top_p: float = 0.95
     top_k: int = 64
+    seed: int = 0
+
+    def __post_init__(self) -> None:
+        validate_seed(self.seed)
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +93,7 @@ class ExperimentResult:
     vector_path: str | None
     artifact_path: str | None
     reproduce_command: str
+    sampling_control: dict[str, object] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -122,24 +128,23 @@ def _repo_relative(path: Path | None) -> str | None:
         return str(path)
 
 
-def build_cli_command(request: ExperimentRequest) -> str:
-    return (
-        "python scripts/run_actadd.py "
-        "--config <prompt-pair-config.yaml> "
-        f'--hf-model-id "{request.model_id}" '
-        f"--layer {request.layer} "
-        f"--coefficient {request.coefficient} "
-        f"--hook-stage {request.hook_stage} "
-        f"--max-new-tokens {request.max_new_tokens}"
-    )
+def build_cli_command(request: ExperimentRequest, *, artifact_path: Path | None = None) -> str:
+    # The result embeds the complete request, including prompts and decoding
+    # settings. A command reconstructed from a subset silently loses controls.
+    path = _repo_relative(artifact_path) or "<experiment-request.json>"
+    return f'llm-steering run --request "{path}"'
 
 
-def build_sweep_cli_command(base_request: ExperimentRequest, *, layers: list[int], coefficients: list[float]) -> str:
+def build_sweep_cli_command(
+    base_request: ExperimentRequest, *, layers: list[int], coefficients: list[float],
+    artifact_path: Path | None = None,
+) -> str:
     layer_args = " ".join(str(layer) for layer in layers)
     coefficient_args = " ".join(str(coefficient) for coefficient in coefficients)
+    request_path = _repo_relative(artifact_path) or "<experiment-request.json>"
     return (
         "llm-steering sweep "
-        "--request <experiment-request.json> "
+        f'--request "{request_path}" '
         f"--layers {layer_args} "
         f"--coefficients {coefficient_args}"
     )
@@ -234,6 +239,19 @@ def run_experiment(
     loaded: LoadedHFModel | None = None,
     save_artifacts: bool = True,
 ) -> ExperimentResult:
+    # Include loading/vector extraction in the same preservation/serialization
+    # scope, since custom runtimes can consume RNG even before generation.
+    with paired_torch_seed(request.seed, enabled=request.do_sample):
+        return _run_experiment(request, settings=settings, loaded=loaded, save_artifacts=save_artifacts)
+
+
+def _run_experiment(
+    request: ExperimentRequest,
+    *,
+    settings: RuntimeSettings | None,
+    loaded: LoadedHFModel | None,
+    save_artifacts: bool,
+) -> ExperimentResult:
     entry = get_model_entry(request.model_id)
     require_steering_ready(request.model_id)
 
@@ -241,42 +259,45 @@ def run_experiment(
     loaded_model = loaded or load_hf_model(runtime_settings, model_id=request.model_id)
     artifact = _build_vector(loaded_model, request)
 
-    baseline = generate_text(
-        loaded_model,
-        system_prompt=request.system_prompt,
-        user_prompt=request.user_prompt,
-        max_new_tokens=request.max_new_tokens,
-        do_sample=request.do_sample,
-        temperature=request.temperature,
-        top_p=request.top_p,
-        top_k=request.top_k,
-    )
+    with paired_torch_seed(request.seed, enabled=request.do_sample):
+        baseline = generate_text(
+            loaded_model,
+            system_prompt=request.system_prompt,
+            user_prompt=request.user_prompt,
+            max_new_tokens=request.max_new_tokens,
+            do_sample=request.do_sample,
+            temperature=request.temperature,
+            top_p=request.top_p,
+            top_k=request.top_k,
+        )
     prompt_only_system_prompt = build_prompt_only_system_prompt(request.system_prompt, request.prompt_pairs)
-    prompt_only = generate_text(
-        loaded_model,
-        system_prompt=prompt_only_system_prompt,
-        user_prompt=request.user_prompt,
-        max_new_tokens=request.max_new_tokens,
-        do_sample=request.do_sample,
-        temperature=request.temperature,
-        top_p=request.top_p,
-        top_k=request.top_k,
-    )
-    steered = generate_with_steering(
-        loaded_model,
-        system_prompt=request.system_prompt,
-        user_prompt=request.user_prompt,
-        vector=artifact.vector,
-        layer_index=request.layer,
-        coefficient=request.coefficient,
-        apply_to=request.apply_to,
-        hook_stage=request.hook_stage,
-        max_new_tokens=request.max_new_tokens,
-        do_sample=request.do_sample,
-        temperature=request.temperature,
-        top_p=request.top_p,
-        top_k=request.top_k,
-    )
+    with paired_torch_seed(request.seed, enabled=request.do_sample):
+        prompt_only = generate_text(
+            loaded_model,
+            system_prompt=prompt_only_system_prompt,
+            user_prompt=request.user_prompt,
+            max_new_tokens=request.max_new_tokens,
+            do_sample=request.do_sample,
+            temperature=request.temperature,
+            top_p=request.top_p,
+            top_k=request.top_k,
+        )
+    with paired_torch_seed(request.seed, enabled=request.do_sample):
+        steered = generate_with_steering(
+            loaded_model,
+            system_prompt=request.system_prompt,
+            user_prompt=request.user_prompt,
+            vector=artifact.vector,
+            layer_index=request.layer,
+            coefficient=request.coefficient,
+            apply_to=request.apply_to,
+            hook_stage=request.hook_stage,
+            max_new_tokens=request.max_new_tokens,
+            do_sample=request.do_sample,
+            temperature=request.temperature,
+            top_p=request.top_p,
+            top_k=request.top_k,
+        )
 
     experiment_id = f"exp_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid4().hex[:8]}"
     vector_path = default_vector_path(request, experiment_id) if save_artifacts else None
@@ -307,7 +328,15 @@ def run_experiment(
         steering_delta=output_delta_metrics(prompt_only, steered),
         vector_path=_repo_relative(vector_path),
         artifact_path=_repo_relative(artifact_path),
-        reproduce_command=build_cli_command(request),
+        reproduce_command=build_cli_command(request, artifact_path=artifact_path),
+        sampling_control={
+            "seed": request.seed,
+            "paired": request.do_sample,
+            "rng_backends": ["torch_cpu"] + (["torch_cuda"] if torch.cuda.is_available() else []),
+            "deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+            "scope": "preserve entire experiment; reset each generation only when sampling",
+            "request_artifact_saved": artifact_path is not None,
+        },
     )
     if artifact_path is not None:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -330,6 +359,8 @@ def _sweep_run_summary(index: int, request: ExperimentRequest, result: Experimen
         "coefficient": request.coefficient,
         "hook_stage": request.hook_stage,
         "apply_to": request.apply_to,
+        "seed": request.seed,
+        "sampling_control": result.sampling_control,
         "artifact_path": result.artifact_path,
         "vector_path": result.vector_path,
         "diagnostics": result.diagnostics,
@@ -357,6 +388,20 @@ def run_sweep(
     settings: RuntimeSettings | None = None,
     loaded: LoadedHFModel | None = None,
     save_artifacts: bool = True,
+) -> SweepResult:
+    with paired_torch_seed(base_request.seed, enabled=base_request.do_sample):
+        return _run_sweep(base_request, layers=layers, coefficients=coefficients,
+                          settings=settings, loaded=loaded, save_artifacts=save_artifacts)
+
+
+def _run_sweep(
+    base_request: ExperimentRequest,
+    *,
+    layers: list[int],
+    coefficients: list[float],
+    settings: RuntimeSettings | None,
+    loaded: LoadedHFModel | None,
+    save_artifacts: bool,
 ) -> SweepResult:
     if not layers:
         raise ValueError("At least one sweep layer is required.")
@@ -392,7 +437,9 @@ def run_sweep(
         runs=runs,
         aggregate_diagnostics=_aggregate_sweep_runs(runs),
         artifact_path=_repo_relative(artifact_path),
-        reproduce_command=build_sweep_cli_command(base_request, layers=layers, coefficients=coefficients),
+        reproduce_command=build_sweep_cli_command(
+            base_request, layers=layers, coefficients=coefficients, artifact_path=artifact_path,
+        ),
     )
     if artifact_path is not None:
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -401,6 +448,9 @@ def run_sweep(
 
 
 def request_from_mapping(data: dict[str, Any]) -> ExperimentRequest:
+    for name in ("normalize", "do_sample"):
+        if name in data and not isinstance(data[name], bool):
+            raise ValueError(f"{name} must be a JSON boolean (true or false).")
     prompt_pairs = tuple(
         PromptPairSpec(positive=str(pair["positive"]), negative=str(pair["negative"]))
         for pair in data.get("prompt_pairs", [])
@@ -423,12 +473,13 @@ def request_from_mapping(data: dict[str, Any]) -> ExperimentRequest:
         coefficient=float(data["coefficient"]),
         apply_to=apply_to,
         hook_stage=hook_stage,
-        normalize=bool(data.get("normalize", True)),
+        normalize=data.get("normalize", True),
         max_new_tokens=int(data.get("max_new_tokens", 96)),
-        do_sample=bool(data.get("do_sample", False)),
+        do_sample=data.get("do_sample", False),
         temperature=float(data.get("temperature", 1.0)),
         top_p=float(data.get("top_p", 0.95)),
         top_k=int(data.get("top_k", 64)),
+        seed=data.get("seed", 0),
     )
 
 

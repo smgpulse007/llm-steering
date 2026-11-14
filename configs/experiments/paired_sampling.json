@@ -1,0 +1,22 @@
+{
+  "model_id": "google/gemma-4-E2B-it",
+  "system_prompt": "You are a helpful assistant working with a synthetic support scenario.",
+  "user_prompt": "A fictional parcel arrived damaged. Write a short support reply without inventing a refund policy.",
+  "prompt_pairs": [
+    {
+      "positive": "Acknowledge the problem and give a clear next step.",
+      "negative": "Dismiss the problem and give vague advice."
+    }
+  ],
+  "layer": 18,
+  "coefficient": 1.0,
+  "apply_to": "last_token",
+  "hook_stage": "post",
+  "normalize": true,
+  "max_new_tokens": 96,
+  "do_sample": true,
+  "temperature": 0.8,
+  "top_p": 0.95,
+  "top_k": 64,
+  "seed": 41
+}
