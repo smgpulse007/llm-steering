@@ -226,7 +226,7 @@ The setup GIF can be rebuilt with:
 python scripts/build_readme_media.py --skip-ui
 ```
 
-The workbench GIF is assembled from captured frames of the running app. Place PNG frames in `.tmp/readme_ui_frames/` and run `python scripts/build_readme_media.py` to rebuild `docs/assets/workbench_ui_overview.gif`.
+The current console GIF is assembled from actual static-build captures in `docs/assets/console-demo/`. Run `python scripts/assemble_console_recording.py` to rebuild it. The earlier `workbench_ui_overview.gif` is retained as a historical artifact and is no longer the current console preview.
 
 For terminal-recording enthusiasts: `docs/tapes/` includes optional VHS notes so you can create terminal-native GIFs on compatible setups. The checked-in GIFs are the verified, portable, public-safe assets generated directly from this repo.
 

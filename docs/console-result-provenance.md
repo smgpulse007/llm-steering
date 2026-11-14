@@ -30,11 +30,26 @@ npm run build
 npm run build:pages
 ```
 
-Four tests cover edits during an in-flight request, later edits and export
-consistency, delayed artifact responses, and the initial empty state. Manual
+Five tests cover edits during an in-flight request, later edits and export
+consistency, delayed artifact responses, the initial empty state, and model-report
+identity. Manual
 browser QA also used a clearly labeled synthetic API fixture: a Tutor run at
 coefficient 1.3 remained Tutor/1.3 in both JSON exports after the draft changed to
 Support/9. This verifies UI state handling, not model quality or inference.
+
+The unchanged Python regression suite also passed: 93 tests and one CUDA skip.
+Both local and Pages builds passed TypeScript/Vite checks and the Pages asset
+validator. Static browser inspection at desktop and 390px mobile widths found no
+horizontal overflow, and its console recorded no warnings or errors.
+
+Independent source review found no blocker in the completed-run path and identified
+adjacent stale-response races. Document loads now ignore responses after selection
+changes, and introspection/hook-smoke reports render only for their matching model.
+Completed sweeps identify their saved model and axes separately from the next draft.
+Browser checks with three-second synthetic response delays confirmed that document
+B remained selected after document A completed, and old Gemma/Qwen validation
+reports did not appear in the newly selected model's report panel. Historical log
+entries retained the original model IDs, and unvalidated model runs stayed gated.
 
 The README recording is captured from the actual static build. Frames and hashes
 are in `assets/console-demo/`; `python scripts/assemble_console_recording.py`

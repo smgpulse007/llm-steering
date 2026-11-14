@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   artifactPreviewForRun, captureRequest, completeRun, draftDiffersFromRun,
-  runRecordJson, vectorMetadataJson,
+  reportForModel, runRecordJson, vectorMetadataJson,
 } from "../src/lib/experimentRecord.ts";
 
 // Synthetic API fixtures for state-provenance tests; no model is invoked.
@@ -68,4 +68,11 @@ test("an untouched draft matches its run and the initial console has no artifact
   assert.equal(draftDiffersFromRun(null, draft), false);
   assert.equal(artifactPreviewForRun(null, null), "");
   assert.equal(draftDiffersFromRun(completeRun(draft, result(), "A"), draft), false);
+});
+
+test("late validation reports cannot validate a different selected model", () => {
+  const oldReport = {model_id: "fixture/model-a", hook_compatible: true, status: "fixture"};
+  assert.equal(reportForModel("fixture/model-b", oldReport), null);
+  assert.equal(reportForModel("fixture/model-b", null), null);
+  assert.equal(reportForModel("fixture/model-a", oldReport), oldReport);
 });

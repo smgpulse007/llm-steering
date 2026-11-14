@@ -8,6 +8,10 @@ export type RunRecord = {
 
 export type ArtifactPreview = { experimentId: string; text: string };
 
+export function reportForModel<T extends { model_id: string }>(modelId: string, report: T | null): T | null {
+  return report?.model_id === modelId ? report : null;
+}
+
 export function captureRequest(request: ExperimentPayload): ExperimentPayload {
   return structuredClone(request);
 }

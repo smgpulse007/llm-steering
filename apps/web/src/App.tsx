@@ -42,7 +42,7 @@ import {
 import { steeringPresets, type SteeringPreset } from "./lib/presets";
 import {
   artifactPreviewForRun, captureRequest, completeRun, draftDiffersFromRun,
-  runRecordJson, vectorMetadataJson, type ArtifactPreview, type RunRecord
+  reportForModel, runRecordJson, vectorMetadataJson, type ArtifactPreview, type RunRecord
 } from "./lib/experimentRecord";
 import { showcaseUseCases, staticSiteNotes } from "./lib/showcase";
 import type {
@@ -268,8 +268,10 @@ export function App() {
   const [payload, setPayload] = useState<ExperimentPayload>(initialPayload);
   const [selectedId, setSelectedId] = useState(initialPayload.model_id);
   const [selectedPresetId, setSelectedPresetId] = useState(steeringPresets[0].id);
-  const [introspection, setIntrospection] = useState<IntrospectionReport | null>(null);
-  const [hookSmokeReport, setHookSmokeReport] = useState<HookSmokeReport | null>(null);
+  const [rawIntrospection, setIntrospection] = useState<IntrospectionReport | null>(null);
+  const [rawHookSmokeReport, setHookSmokeReport] = useState<HookSmokeReport | null>(null);
+  const introspection = reportForModel(selectedId, rawIntrospection);
+  const hookSmokeReport = reportForModel(selectedId, rawHookSmokeReport);
   const [hookSmokeLoadModel, setHookSmokeLoadModel] = useState(false);
   const [runRecord, setRunRecord] = useState<RunRecord | null>(null);
   const result = runRecord?.result ?? null;
@@ -282,7 +284,8 @@ export function App() {
   const [docs, setDocs] = useState<LocalDoc[]>([]);
   const [selectedDocId, setSelectedDocId] = useState(initialRoute.docId ?? DEFAULT_DOC_ID);
   const [selectedDocSectionId, setSelectedDocSectionId] = useState(initialRoute.docSectionId ?? "");
-  const [docContent, setDocContent] = useState<LocalDocContent | null>(null);
+  const [rawDocContent, setDocContent] = useState<LocalDocContent | null>(null);
+  const docContent = rawDocContent?.doc.doc_id === selectedDocId ? rawDocContent : null;
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const [fetchedArtifact, setFetchedArtifact] = useState<ArtifactPreview | null>(null);
   const artifactPreview = artifactPreviewForRun(runRecord, fetchedArtifact);
@@ -334,9 +337,18 @@ export function App() {
 
   useEffect(() => {
     if (!selectedDocId) return;
+    let active = true;
+    setDocContent(null);
     fetchDoc(selectedDocId)
-      .then(setDocContent)
-      .catch((error) => setLogs((current) => [`Doc load failed: ${(error as Error).message}`, ...current]));
+      .then((content) => {
+        if (!active) return;
+        if (content.doc.doc_id !== selectedDocId) throw new Error("Returned document does not match the selected ID.");
+        setDocContent(content);
+      })
+      .catch((error) => {
+        if (active) setLogs((current) => [`Doc load failed for ${selectedDocId}: ${(error as Error).message}`, ...current]);
+      });
+    return () => { active = false; };
   }, [selectedDocId]);
 
   useEffect(() => {
@@ -982,6 +994,9 @@ function SweepPanel({
 
       {result ? (
         <section className="sweep-result">
+          <p><strong>Last completed sweep: {result.sweep_id}</strong></p>
+          <p>Model: {String(result.base_request.model_id ?? "not recorded")}. Layers: {result.axes.layers.join(", ")}. Coefficients: {result.axes.coefficients.join(", ")}.</p>
+          <p>These results and the exported manifest describe this saved sweep. Editing controls configures the next run.</p>
           <div className="sweep-metrics">
             <Metric label="Status" value={result.status} />
             <Metric label="Completed" value={aggregateText(result.aggregate_diagnostics.completed_runs, String(result.run_count))} />
