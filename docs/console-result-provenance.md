@@ -50,6 +50,9 @@ Browser checks with three-second synthetic response delays confirmed that docume
 B remained selected after document A completed, and old Gemma/Qwen validation
 reports did not appear in the newly selected model's report panel. Historical log
 entries retained the original model IDs, and unvalidated model runs stayed gated.
+Follow-up source review found no blocker. Saved sweep plans and hook reports are
+also labeled as completed records: same-model input edits require a new check,
+and a visible saved plan is not automatically regenerated from the current draft.
 
 The README recording is captured from the actual static build. Frames and hashes
 are in `assets/console-demo/`; `python scripts/assemble_console_recording.py`

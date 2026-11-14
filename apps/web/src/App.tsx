@@ -644,6 +644,7 @@ export function App() {
               </div>
               {hookSmokeReport ? (
                 <div className="hook-smoke-report">
+                  <p className="field-help">Last completed hook check for {hookSmokeReport.model_id}. This report describes the submitted inputs; edit controls and run another check to validate new inputs.</p>
                   <Metric label="Hook smoke" value={hookSmokeReport.status} />
                   <Metric label="Mode" value={hookSmokeReport.mode.replace("_", " ")} />
                   <Metric
@@ -978,10 +979,11 @@ function SweepPanel({
               ? "Model is not steering-ready"
               : "Ready to execute grid"}
         </span>
-        {plan ? <strong>{plan.count} planned runs</strong> : <strong>No grid planned</strong>}
+        {plan ? <strong>Last saved plan: {plan.count} runs</strong> : <strong>No grid planned</strong>}
       </div>
 
-      {plan ? (
+      {plan ? (<>
+        <p className="field-help">Saved plan models: {[...new Set(plan.runs.map((run) => run.model_id))].join(", ") || "none"}. Editing controls configures the next plan and run; this preview retains its submitted values.</p>
         <div className="sweep-plan-list" aria-label="Planned sweep runs">
           {plan.runs.slice(0, 8).map((run, index) => (
             <span key={`${run.layer}-${run.coefficient}-${index}`}>
@@ -990,7 +992,7 @@ function SweepPanel({
           ))}
           {plan.runs.length > 8 ? <span>+{plan.runs.length - 8} more</span> : null}
         </div>
-      ) : null}
+      </>) : null}
 
       {result ? (
         <section className="sweep-result">
@@ -1421,7 +1423,7 @@ function ConsoleRail({
       <p><code>v = mean(h+ - h-)</code><code>h' = h + alpha * v</code></p>
       <p>Layer {payload.layer}, {payload.hook_stage}-activation, {payload.apply_to.replace("_", " ")}.</p>
       <p>Prompt-only control uses the prompt-pair direction as ordinary instructions, then activation steering compares against that control.</p>
-      {introspection ? <p className="warning-copy">Selected-model introspection: {introspection.status}. {introspection.warnings[0] ?? "No warning returned."}</p>
+      {introspection ? <p className="warning-copy">Last completed introspection for {introspection.model_id}: {introspection.status}. {introspection.warnings[0] ?? "No warning returned."}</p>
         : <p className="warning-copy">Run introspection before treating non-Gemma models as steerable.</p>}
     </section>
     <section className="glass-panel artifact-panel">
