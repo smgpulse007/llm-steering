@@ -121,6 +121,11 @@ export const fallbackModels: ModelRegistryEntry[] = [
 ];
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  // Pages is an explicit build mode: use bundled fallbacks without probing an
+  // API that GitHub's static host cannot serve. Local/dev builds retain the API.
+  if (import.meta.env.MODE === "pages") {
+    throw new Error("Live runs require the local workbench API. This Pages build uses bundled artifacts.");
+  }
   const response = await fetch(path, {
     headers: { "Content-Type": "application/json" },
     ...init
