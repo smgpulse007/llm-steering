@@ -1679,3 +1679,7 @@ code {
     overflow-x: auto;
   }
 }
+
+.result-provenance { padding: 24px; overflow-wrap: anywhere; }
+.result-provenance h2 { margin: 8px 0 12px; font-size: 1.25rem; }
+.result-provenance p { line-height: 1.6; }

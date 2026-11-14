@@ -1,0 +1,34 @@
+{
+  "capturedAt": "2026-11-14",
+  "mode": "Actual static Pages build; no model inference",
+  "page": "/llm-steering/#workbench",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "imageSize": [
+    1425,
+    990
+  ],
+  "frameDurationMs": 3000,
+  "steps": [
+    "Support preset and empty diagnostics",
+    "Tutor preset updates the draft",
+    "Outputs await a completed local run"
+  ],
+  "editing": "Unaltered browser frames assembled into a GIF; palette conversion only.",
+  "frames": [
+    {
+      "file": "support.png",
+      "sha256": "a6f9bc7a4f587757b018c238d09dfa77160d993be954a591f3e7321459c6a684"
+    },
+    {
+      "file": "tutor.png",
+      "sha256": "8e7e8b67f1047cc3f6891a9a7b51ec15b45108da500d8526ecbffc4237adb8ed"
+    },
+    {
+      "file": "awaiting-run.png",
+      "sha256": "07fd73e63ca731a8db0fd842a3ff750d22fb72d52485409b6ad4c02b6a979dcd"
+    }
+  ]
+}

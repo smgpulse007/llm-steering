@@ -40,10 +40,13 @@ import {
   runSweep
 } from "./lib/api";
 import { steeringPresets, type SteeringPreset } from "./lib/presets";
+import {
+  artifactPreviewForRun, captureRequest, completeRun, draftDiffersFromRun,
+  runRecordJson, vectorMetadataJson, type ArtifactPreview, type RunRecord
+} from "./lib/experimentRecord";
 import { showcaseUseCases, staticSiteNotes } from "./lib/showcase";
 import type {
   ExperimentPayload,
-  ExperimentResult,
   HookSmokeReport,
   IntrospectionReport,
   LocalDoc,
@@ -126,82 +129,9 @@ function downloadTextFile(filename: string, text: string, mimeType = "text/plain
   window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }
 
-function vectorMetadataJson(result: ExperimentResult, payload: ExperimentPayload): string {
-  return JSON.stringify(
-    {
-      artifact_kind: "vector_metadata",
-      experiment_id: result.experiment_id,
-      created_at_utc: result.created_at_utc,
-      model_id: payload.model_id,
-      vector_path: result.vector_path,
-      layer: payload.layer,
-      coefficient: payload.coefficient,
-      hook_stage: payload.hook_stage,
-      apply_to: payload.apply_to,
-      normalize: payload.normalize,
-      prompt_pair_count: payload.prompt_pairs.length,
-      prompt_control: result.prompt_control,
-      diagnostics: result.diagnostics,
-      artifact_path: result.artifact_path,
-      reproduce_command: result.reproduce_command
-    },
-    null,
-    2
-  );
-}
-
 const initialPayload: ExperimentPayload = {
   model_id: "google/gemma-4-E2B-it",
   ...steeringPresets[0].payload
-};
-
-const demoResult: ExperimentResult = {
-  experiment_id: "preview_not_run",
-  created_at_utc: new Date().toISOString(),
-  baseline:
-    "## Customer reply\n\nI can check the order details and see what happened with the shipment. Please send the tracking number and order ID.\n\n- confirm the order\n- review the shipment\n- reply with the next step",
-  prompt_only:
-    "## Customer reply\n\nI am sorry the replacement part arrived late. I can check the order details and help identify the next step.\n\n- confirm the order\n- review the shipment\n- explain the next step",
-  steered:
-    "## Customer reply\n\nI am sorry the replacement part arrived late. I will check the order, confirm the delivery issue, and outline the fastest next step so this gets resolved cleanly.\n\n- confirm the order\n- review the shipment\n- provide a clear resolution path",
-  prompt_control: {
-    strategy: "positive_negative_prompt_pair_instructions",
-    system_prompt:
-      "Prompt-only steering control: follow the positive prompt-pair directions using ordinary instructions only."
-  },
-  diagnostics: {
-    vector_norm: 1,
-    pair_count: 2,
-    pairwise_cosine_mean: 0.42,
-    pairwise_cosine_min: 0.31,
-    separability_score: 1.14,
-    reliability_label: "directionally coherent"
-  },
-  output_delta: {
-    changed: true,
-    baseline_chars: 190,
-    steered_chars: 247,
-    char_delta: 57,
-    word_jaccard: 0.42
-  },
-  control_delta: {
-    changed: true,
-    baseline_chars: 190,
-    steered_chars: 222,
-    char_delta: 32,
-    word_jaccard: 0.56
-  },
-  steering_delta: {
-    changed: true,
-    baseline_chars: 222,
-    steered_chars: 247,
-    char_delta: 25,
-    word_jaccard: 0.64
-  },
-  vector_path: "vectors/preview.pt",
-  artifact_path: "results/preview.json",
-  reproduce_command:
-    "python scripts/run_actadd.py --config configs/prompt_pairs/customer_support_empathy.yaml --layer 18 --coefficient 1.5 --hook-stage post"
 };
 
 const supportCandidates = [
@@ -341,7 +271,8 @@ export function App() {
   const [introspection, setIntrospection] = useState<IntrospectionReport | null>(null);
   const [hookSmokeReport, setHookSmokeReport] = useState<HookSmokeReport | null>(null);
   const [hookSmokeLoadModel, setHookSmokeLoadModel] = useState(false);
-  const [result, setResult] = useState<ExperimentResult>(demoResult);
+  const [runRecord, setRunRecord] = useState<RunRecord | null>(null);
+  const result = runRecord?.result ?? null;
   const [logs, setLogs] = useState<string[]>(["Workbench initialized with local fallback registry."]);
   const [busy, setBusy] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>(initialRoute.activeTab ?? "learn");
@@ -353,7 +284,8 @@ export function App() {
   const [selectedDocSectionId, setSelectedDocSectionId] = useState(initialRoute.docSectionId ?? "");
   const [docContent, setDocContent] = useState<LocalDocContent | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
-  const [artifactPreview, setArtifactPreview] = useState("");
+  const [fetchedArtifact, setFetchedArtifact] = useState<ArtifactPreview | null>(null);
+  const artifactPreview = artifactPreviewForRun(runRecord, fetchedArtifact);
   const [sweepLayersText, setSweepLayersText] = useState("12, 18");
   const [sweepCoefficientsText, setSweepCoefficientsText] = useState("0.5, 1.0, 1.5");
   const [sweepPlanResult, setSweepPlanResult] = useState<SweepPlan | null>(null);
@@ -428,8 +360,8 @@ export function App() {
   );
 
   const activationDiff = useMemo(
-    () => safeDiffTokens(result.prompt_only, result.steered),
-    [result.prompt_only, result.steered]
+    () => result ? safeDiffTokens(result.prompt_only, result.steered) : null,
+    [result]
   );
 
   useEffect(() => {
@@ -526,11 +458,13 @@ export function App() {
       setLogs((current) => [`Run blocked: ${selectedModel.steering_notes}`, ...current]);
       return;
     }
+    const submittedRequest = captureRequest(payload);
+    const submittedPreset = selectedPreset.name;
     setBusy(true);
     try {
-      const next = await runExperiment(payload);
-      setResult(next);
-      setLogs((current) => [`Experiment ${next.experiment_id} completed and exported.`, ...current]);
+      const next = await runExperiment(submittedRequest);
+      setRunRecord(completeRun(submittedRequest, next, submittedPreset));
+      setLogs((current) => [`Experiment ${next.experiment_id} completed. Result available for export.`, ...current]);
     } catch (error) {
       setLogs((current) => [`Experiment failed: ${(error as Error).message}`, ...current]);
     } finally {
@@ -592,17 +526,12 @@ export function App() {
   }
 
   async function handleFetchArtifact() {
-    if (apiMode !== "local") {
-      setArtifactPreview("Artifact readback is local-only. Public Pages mode displays checked-in showcase artifacts.");
-      return;
-    }
-    if (result.experiment_id === "preview_not_run") {
-      setArtifactPreview("Run an experiment first, then fetch the saved JSON artifact.");
-      return;
-    }
+    if (apiMode !== "local" || !result) return;
+    const requestedId = result.experiment_id;
     try {
-      const artifact = await fetchExperiment(result.experiment_id);
-      setArtifactPreview(JSON.stringify(artifact, null, 2));
+      const artifact = await fetchExperiment(requestedId);
+      if (artifact.experiment_id !== requestedId) throw new Error("Artifact identity does not match the requested run.");
+      setFetchedArtifact({ experimentId: requestedId, text: JSON.stringify(artifact, null, 2) });
       setLogs((current) => [`Fetched artifact ${artifact.experiment_id}.`, ...current]);
     } catch (error) {
       setLogs((current) => [`Artifact fetch failed: ${(error as Error).message}`, ...current]);
@@ -910,27 +839,34 @@ export function App() {
               result={sweepResult}
             />
 
-            <div className="comparison-grid">
+            <section className="glass-panel result-provenance" aria-label="Result provenance" aria-live="polite">
+              {runRecord ? <>
+                <p className="eyebrow">Last completed local run</p>
+                <h2>Run from {runRecord.presetName}</h2>
+                <p><code>{runRecord.result.experiment_id}</code> · {runRecord.result.created_at_utc}</p>
+                <p>{runRecord.request.model_id} · layer {runRecord.request.layer} · coefficient {runRecord.request.coefficient} · {runRecord.request.hook_stage} / {runRecord.request.apply_to}</p>
+                {draftDiffersFromRun(runRecord, payload) && <p className="warning-copy">Draft settings have changed. The outputs, diagnostics and exports below still belong to this completed run.</p>}
+              </> : <>
+                <p className="eyebrow">No experiment has run</p>
+                <h2>Choose a direction. Run it locally. Inspect the evidence.</h2>
+                <p>These controls prepare a request. Selecting a preset does not generate replies or measure a steering vector.</p>
+                <p>{apiMode === "static" ? "This hosted console is a configuration preview. Start the local API and a supported model to generate results." : "Run Steering will populate the comparison, measured diagnostics and result exports after the local API completes."}</p>
+              </>}
+            </section>
+            {result ? <div className="comparison-grid" key={result.experiment_id}>
               <OutputPane title="Baseline" text={result.baseline} tone="baseline" diffResult={null} side="left" />
-              <OutputPane
-                title="Prompt-only Control"
-                text={result.prompt_only}
-                tone="prompt"
-                diffResult={autoDiff ? activationDiff : null}
-                side="left"
-              />
-              <OutputPane
-                title="Activation-steered"
-                text={result.steered}
-                tone="steered"
-                diffResult={autoDiff ? activationDiff : null}
-                side="right"
-              />
-            </div>
+              <OutputPane title="Prompt-only Control" text={result.prompt_only} tone="prompt" diffResult={autoDiff ? activationDiff : null} side="left" />
+              <OutputPane title="Activation-steered" text={result.steered} tone="steered" diffResult={autoDiff ? activationDiff : null} side="right" />
+            </div> : <div className="comparison-grid" aria-label="Outputs awaiting a local run">
+              {["Baseline", "Prompt-only Control", "Activation-steered"].map(title => <section className="glass-panel output-pane" key={title}>
+                <h3>{title}</h3><p>Awaiting a completed local run. No generated output yet.</p>
+              </section>)}
+            </div>}
           </section>
 
           <ConsoleRail
-            result={result}
+            key={result?.experiment_id ?? "not-run"}
+            record={runRecord}
             payload={payload}
             introspection={introspection}
             logs={logs}
@@ -941,7 +877,6 @@ export function App() {
       ) : (
         <ExplainabilityView
           payload={payload}
-          result={result}
           models={models}
           selectedModel={selectedModel}
           explainTab={explainTab}
@@ -1428,14 +1363,9 @@ function DocOutline({
 }
 
 function ConsoleRail({
-  result,
-  payload,
-  introspection,
-  logs,
-  artifactPreview,
-  onFetchArtifact
+  record, payload, introspection, logs, artifactPreview, onFetchArtifact
 }: {
-  result: ExperimentResult;
+  record: RunRecord | null;
   payload: ExperimentPayload;
   introspection: IntrospectionReport | null;
   logs: string[];
@@ -1443,28 +1373,25 @@ function ConsoleRail({
   onFetchArtifact: () => void;
 }) {
   const [artifactAction, setArtifactAction] = useState("");
-  const artifactBaseName = safeFileName(result.experiment_id);
-  const artifactJson =
-    artifactPreview.trim().startsWith("{") ? artifactPreview : JSON.stringify(result, null, 2);
-  const vectorJson = vectorMetadataJson(result, payload);
+  const result = record?.result;
+  const artifactBaseName = safeFileName(result?.experiment_id ?? "not-run");
+  const artifactJson = record ? runRecordJson(record) : "";
+  const vectorJson = record ? vectorMetadataJson(record) : "";
 
   async function handleCopyArtifact(text: string, label: string) {
     const copied = await copyTextToClipboard(text);
     setArtifactAction(copied ? `${label} copied` : `${label} unavailable`);
   }
-
   function handleDownloadArtifact(filename: string, text: string) {
     downloadTextFile(filename, text, "application/json;charset=utf-8");
     setArtifactAction(`${filename} downloaded`);
   }
 
-  return (
-    <aside className="right-rail">
-      <section className="glass-panel">
-        <div className="panel-title">
-          <BarChart3 size={18} />
-          <span>Diagnostics</span>
-        </div>
+  return <aside className="right-rail">
+    <section className="glass-panel">
+      <div className="panel-title"><BarChart3 size={18} /><span>Last completed diagnostics</span></div>
+      {result ? <>
+        <p><code>{result.experiment_id}</code></p>
         <Metric label="Vector norm" value={formatNumber(result.diagnostics.vector_norm)} />
         <Metric label="Pair count" value={String(result.diagnostics.pair_count)} />
         <Metric label="Cosine mean" value={formatNumber(result.diagnostics.pairwise_cosine_mean)} />
@@ -1472,84 +1399,43 @@ function ConsoleRail({
         <Metric label="Reliability" value={result.diagnostics.reliability_label} />
         <Metric label="Prompt-only delta" value={`${result.control_delta.char_delta >= 0 ? "+" : ""}${result.control_delta.char_delta} chars`} />
         <Metric label="Activation delta" value={`${result.steering_delta.char_delta >= 0 ? "+" : ""}${result.steering_delta.char_delta} chars`} />
-      </section>
-
-      <section className="glass-panel explain-panel">
-        <div className="panel-title">
-          <BookOpen size={18} />
-          <span>Explainability</span>
-        </div>
-        <p>
-          <code>v = mean(h+ - h-)</code>
-          <code>h' = h + alpha * v</code>
-        </p>
-        <p>
-          Layer {payload.layer}, {payload.hook_stage}-activation, {payload.apply_to.replace("_", " ")}.
-        </p>
-        <p>
-          Prompt-only control uses the same prompt-pair direction as ordinary instructions, then activation steering
-          compares against that control.
-        </p>
-        {introspection ? (
-          <p className="warning-copy">
-            Introspection: {introspection.status}. {introspection.warnings[0] ?? "No warning returned."}
-          </p>
-        ) : (
-          <p className="warning-copy">Run introspection before treating non-Gemma models as steerable.</p>
-        )}
-      </section>
-
-      <section className="glass-panel artifact-panel">
-        <div className="panel-title">
-          <Braces size={18} />
-          <span>Artifacts</span>
-        </div>
+      </> : <p>No measurements yet. Diagnostics appear after a local experiment completes.</p>}
+    </section>
+    <section className="glass-panel explain-panel">
+      <div className="panel-title"><BookOpen size={18} /><span>Draft configuration</span></div>
+      <p><code>v = mean(h+ - h-)</code><code>h' = h + alpha * v</code></p>
+      <p>Layer {payload.layer}, {payload.hook_stage}-activation, {payload.apply_to.replace("_", " ")}.</p>
+      <p>Prompt-only control uses the prompt-pair direction as ordinary instructions, then activation steering compares against that control.</p>
+      {introspection ? <p className="warning-copy">Selected-model introspection: {introspection.status}. {introspection.warnings[0] ?? "No warning returned."}</p>
+        : <p className="warning-copy">Run introspection before treating non-Gemma models as steerable.</p>}
+    </section>
+    <section className="glass-panel artifact-panel">
+      <div className="panel-title"><Braces size={18} /><span>Completed-run artifacts</span></div>
+      {result ? <>
+        <p>Exports use the submitted configuration for <code>{result.experiment_id}</code>, even when the draft changes.</p>
         <code>{result.reproduce_command}</code>
         <span><ChevronRight size={14} /> {result.vector_path ?? "vector not saved"}</span>
         <span><ChevronRight size={14} /> {result.artifact_path ?? "result not saved"}</span>
-        <button className="secondary-button compact" onClick={onFetchArtifact}>
-          <Braces size={15} /> Fetch JSON artifact
-        </button>
+        <button className="secondary-button compact" onClick={onFetchArtifact}><Braces size={15} /> Fetch saved JSON artifact</button>
         <div className="artifact-actions" aria-label="Artifact export actions">
-          <button className="icon-action" onClick={() => handleCopyArtifact(artifactJson, "Result JSON")}>
-            <Copy size={15} /> Copy JSON
-          </button>
-          <button
-            className="icon-action"
-            onClick={() => handleDownloadArtifact(`${artifactBaseName}.experiment.json`, artifactJson)}
-          >
-            <Download size={15} /> Download JSON
-          </button>
-          <button className="icon-action" onClick={() => handleCopyArtifact(vectorJson, "Vector metadata")}>
-            <Copy size={15} /> Copy vector
-          </button>
-          <button
-            className="icon-action"
-            onClick={() => handleDownloadArtifact(`${artifactBaseName}.vector-metadata.json`, vectorJson)}
-          >
-            <Download size={15} /> Download vector
-          </button>
+          <button className="icon-action" onClick={() => handleCopyArtifact(artifactJson, "Run record")}><Copy size={15} /> Copy run JSON</button>
+          <button className="icon-action" onClick={() => handleDownloadArtifact(`${artifactBaseName}.console-run.json`, artifactJson)}><Download size={15} /> Download run JSON</button>
+          <button className="icon-action" onClick={() => handleCopyArtifact(vectorJson, "Vector metadata")}><Copy size={15} /> Copy vector metadata</button>
+          <button className="icon-action" onClick={() => handleDownloadArtifact(`${artifactBaseName}.vector-metadata.json`, vectorJson)}><Download size={15} /> Download vector metadata</button>
         </div>
-        {artifactAction ? <p className="action-status">{artifactAction}</p> : null}
-        {artifactPreview ? <pre className="artifact-json">{artifactPreview}</pre> : null}
-      </section>
-
-      <section className="glass-panel logs-panel">
-        <div className="panel-title">
-          <TerminalSquare size={18} />
-          <span>Logs</span>
-        </div>
-        {logs.slice(0, 6).map((line, index) => (
-          <p key={`${line}-${index}`}>{line}</p>
-        ))}
-      </section>
-    </aside>
-  );
+        {artifactAction && <p className="action-status">{artifactAction}</p>}
+        {artifactPreview && <pre className="artifact-json">{artifactPreview}</pre>}
+      </> : <p>No result or vector artifact exists yet. Export actions appear after a completed local run.</p>}
+    </section>
+    <section className="glass-panel logs-panel">
+      <div className="panel-title"><TerminalSquare size={18} /><span>Logs</span></div>
+      {logs.slice(0, 6).map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
+    </section>
+  </aside>;
 }
 
 function ExplainabilityView({
   payload,
-  result,
   models,
   selectedModel,
   explainTab,
@@ -1560,7 +1446,6 @@ function ExplainabilityView({
   docContent
 }: {
   payload: ExperimentPayload;
-  result: ExperimentResult;
   models: ModelRegistryEntry[];
   selectedModel: ModelRegistryEntry;
   explainTab: "math" | "controls" | "docs" | "roadmap";
@@ -1633,13 +1518,12 @@ function ExplainabilityView({
           <section className="glass-panel architecture-panel">
             <div className="panel-title">
               <Layers size={18} />
-              <span>Current Run</span>
+              <span>Draft configuration</span>
             </div>
             <Metric label="Selected model" value={selectedModel.display_name} />
             <Metric label="Layer" value={String(payload.layer)} />
             <Metric label="Coefficient" value={String(payload.coefficient)} />
             <Metric label="Hook" value={`${payload.hook_stage} / ${payload.apply_to}`} />
-            <Metric label="Reliability" value={result.diagnostics.reliability_label} />
             <Metric label="Registry size" value={String(models.length)} />
           </section>
         </section>

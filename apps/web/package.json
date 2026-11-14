@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "build:pages": "tsc --noEmit && vite build --mode pages --base=/llm-steering/",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
-    "preview:pages": "vite preview --host 127.0.0.1 --port 4173 --base=/llm-steering/"
+    "preview:pages": "vite preview --host 127.0.0.1 --port 4173 --base=/llm-steering/",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",

@@ -87,7 +87,9 @@ The repo now includes a functional steering workbench shell for the open-source 
 - artifact drawer with reproducible command metadata
 - safety gating for DiffusionGemma, Qwen3.6, and Qwen3-Coder-Next until validation passes
 
-![Steering workbench UI](docs/assets/workbench_ui_overview.gif)
+![Actual static console: presets prepare a draft and outputs await a local run](docs/assets/console-provenance-demo.gif)
+
+This recording shows configuration, not model inference. Results and diagnostics appear only after a local run. Editing the next draft preserves the completed run and its exports. [Result provenance and validation](docs/console-result-provenance.md).
 
 Run the API:
 
@@ -99,7 +101,7 @@ Run the UI:
 
 ```powershell
 cd apps/web
-npm install
+npm ci
 npm run dev
 ```
 
@@ -205,7 +207,7 @@ Together, these demos make the central point of the repo clearer: activation ste
 
 These assets are generated from the local showcase script and illustrate the public-facing examples referenced in this README:
 
-- ![Workbench UI overview](docs/assets/workbench_ui_overview.gif)
+- ![Current console configuration preview](docs/assets/console-provenance-demo.gif)
 - ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 - ![Post-activation steering demo](docs/assets/post_activation_demo.gif)
 - ![Pre-activation steering demo](docs/assets/pre_activation_demo.gif)
@@ -481,7 +483,7 @@ python scripts/download_hf_gemma4.py
 ```powershell
 llm-steering api
 cd apps/web
-npm install
+npm ci
 npm run dev
 ```
 
