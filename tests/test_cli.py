@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from llm_steering.cli import main
+from llm_steering import cli
 
 
 def test_cli_help_lists_product_commands(capsys) -> None:
@@ -24,6 +25,23 @@ def test_cli_verify_no_model(capsys) -> None:
     output = capsys.readouterr().out
     assert '"mode": "no-model"' in output
     assert '"status": "ok"' in output
+
+
+@pytest.mark.parametrize("contents,expected", [('{}', 0), ('{invalid', 1), (None, 1)])
+def test_cli_verify_really_parses_package_json(tmp_path, monkeypatch, capsys, contents, expected):
+    manifest = tmp_path / "apps/web/package.json"
+    manifest.parent.mkdir(parents=True)
+    if contents is not None:
+        manifest.write_text(contents, encoding="utf-8")
+    workflow = tmp_path / ".github/workflows/ci.yml"
+    workflow.parent.mkdir(parents=True)
+    workflow.write_text("name: test\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "ROOT", tmp_path)
+    monkeypatch.setattr(cli, "validate_showcase_files", lambda: {"files": []})
+    assert main(["verify", "--no-model"]) == expected
+    payload = json.loads(capsys.readouterr().out)
+    package = next(check for check in payload["checks"] if check["path"] == "apps/web/package.json")
+    assert package["valid_json"] is (expected == 0)
 
 
 def test_cli_toy_demo_json(capsys) -> None:

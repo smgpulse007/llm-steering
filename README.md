@@ -388,6 +388,24 @@ The live hook smoke path checks pre-hooks and post-hooks across `last_token` and
 
 ## Quick start
 
+### Reproducible sampled comparisons
+
+The experiment API now accepts a recorded `seed`. Sampled baseline, prompt-only,
+and activation-steered generations start from the same PyTorch CPU/CUDA seed,
+with caller RNG state restored after each arm. A saved result retains the full
+request for replay, including custom prompts and decoding settings.
+
+```text
+llm-steering run --request configs/experiments/paired_sampling.json --plan-only
+llm-steering run --request configs/experiments/paired_sampling.json
+```
+
+The first command validates the request without loading weights; the second
+requires the runtime extra and local model access described below. See
+[paired sampling and replay](docs/paired_sampling.md) for saved-result replay,
+seed controls, and the limits of reproducibility. A wording difference alone
+does not establish a quality improvement.
+
 ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 
 ### Path A: no-model beginner demo
