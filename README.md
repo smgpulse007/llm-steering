@@ -124,6 +124,10 @@ The GitHub Pages build runs in static mode. It teaches the beginner path, render
 
 To smoke-test the exact Pages route locally:
 
+The Pages build uses an explicit static mode and does not probe `/api` endpoints.
+Normal development and production builds retain the local API path. See
+[static Pages behavior](docs/static_pages.md).
+
 ```powershell
 cd apps/web
 npm run build:pages
