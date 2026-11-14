@@ -72,6 +72,9 @@ class ExperimentRequest:
 
     def __post_init__(self) -> None:
         validate_seed(self.seed)
+        for name in ("normalize", "do_sample"):
+            if not isinstance(getattr(self, name), bool):
+                raise ValueError(f"{name} must be a JSON boolean (true or false).")
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,6 +212,17 @@ def build_vector_artifact(
     settings: RuntimeSettings | None = None,
     loaded: LoadedHFModel | None = None,
     save_artifact: bool = True,
+) -> dict[str, object]:
+    with paired_torch_seed(request.seed, enabled=request.do_sample):
+        return _build_vector_artifact(request, settings=settings, loaded=loaded, save_artifact=save_artifact)
+
+
+def _build_vector_artifact(
+    request: ExperimentRequest,
+    *,
+    settings: RuntimeSettings | None,
+    loaded: LoadedHFModel | None,
+    save_artifact: bool,
 ) -> dict[str, object]:
     require_steering_ready(request.model_id)
 
@@ -448,9 +462,6 @@ def _run_sweep(
 
 
 def request_from_mapping(data: dict[str, Any]) -> ExperimentRequest:
-    for name in ("normalize", "do_sample"):
-        if name in data and not isinstance(data[name], bool):
-            raise ValueError(f"{name} must be a JSON boolean (true or false).")
     prompt_pairs = tuple(
         PromptPairSpec(positive=str(pair["positive"]), negative=str(pair["negative"]))
         for pair in data.get("prompt_pairs", [])

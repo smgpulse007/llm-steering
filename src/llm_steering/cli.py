@@ -22,13 +22,16 @@ def _print_json(payload: dict[str, Any]) -> None:
 def command_verify(args: argparse.Namespace) -> int:
     checks: list[dict[str, object]] = []
     checks.extend(validate_showcase_files()["files"])  # type: ignore[arg-type]
-    checks.append(
-        {
-            "path": "apps/web/package.json",
-            "exists": (ROOT / "apps" / "web" / "package.json").exists(),
-            "valid_json": True,
-        }
-    )
+    manifest_path = ROOT / "apps" / "web" / "package.json"
+    manifest_check: dict[str, object] = {
+        "path": "apps/web/package.json", "exists": manifest_path.exists(), "valid_json": False,
+    }
+    try:
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_check["valid_json"] = True
+    except (OSError, ValueError) as exc:
+        manifest_check["error"] = str(exc)
+    checks.append(manifest_check)
     checks.append(
         {
             "path": ".github/workflows/ci.yml",
@@ -167,7 +170,11 @@ def command_run(args: argparse.Namespace) -> int:
 def command_sweep(args: argparse.Namespace) -> int:
     from .experiments import run_sweep, sweep_plan
 
-    base_request = _read_experiment_request(args.request)
+    try:
+        base_request = _read_experiment_request(args.request)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"Invalid experiment request: {exc}", file=sys.stderr)
+        return 2
     if args.plan_only:
         planned = sweep_plan(base_request, layers=args.layers, coefficients=args.coefficients)
         _print_json(

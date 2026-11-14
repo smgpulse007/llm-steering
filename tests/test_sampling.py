@@ -174,6 +174,35 @@ def test_boolean_fields_reject_silent_coercion(sample_request, name, value):
         request_from_mapping(payload)
 
 
+@pytest.mark.parametrize("name", ["do_sample", "normalize"])
+@pytest.mark.parametrize("value", ["false", 0, None])
+def test_direct_requests_reject_invalid_booleans(sample_request, name, value):
+    with pytest.raises(ValueError, match="JSON boolean"):
+        replace(sample_request, **{name: value})
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_standalone_vector_build_preserves_rng(sample_request, fake_runtime, monkeypatch, fail):
+    before = torch.random.get_rng_state().clone()
+    def load(*_args, **_kwargs):
+        torch.rand(12)
+        return fake_runtime
+    def build(*_args):
+        vector = torch.rand(4)
+        if fail:
+            raise RuntimeError("synthetic vector failure")
+        return SteeringVectorArtifact(vector=vector, metadata={})
+    monkeypatch.setattr(experiments, "load_hf_model", load)
+    monkeypatch.setattr(experiments, "_build_vector", build)
+    if fail:
+        with pytest.raises(RuntimeError, match="synthetic vector failure"):
+            experiments.build_vector_artifact(sample_request, settings=object(), save_artifact=False)
+    else:
+        result = experiments.build_vector_artifact(sample_request, settings=object(), save_artifact=False)
+        assert result["vector_path"] is None
+    assert torch.equal(before, torch.random.get_rng_state())
+
+
 def test_saved_artifact_replays_complete_request(tmp_path, monkeypatch, sample_request, fake_runtime, capsys):
     path = tmp_path / "experiment.json"
     monkeypatch.setattr(experiments, "default_result_path", lambda _: path)
@@ -214,6 +243,16 @@ def test_run_rejects_invalid_request_shape(tmp_path, payload, capsys):
 def test_sweep_plan_retains_seed(sample_request):
     plan = experiments.sweep_plan(sample_request, layers=[12, 18], coefficients=[0.0, 1.0])
     assert [item.seed for item in plan] == [41] * 4
+
+
+@pytest.mark.parametrize("contents", [None, "{invalid json"])
+def test_sweep_invalid_request_has_actionable_error(tmp_path, contents, capsys):
+    path = tmp_path / "request.json"
+    if contents is not None:
+        path.write_text(contents, encoding="utf-8")
+    assert main(["sweep", "--request", str(path), "--layers", "12",
+                 "--coefficients", "0.0", "--plan-only"]) == 2
+    assert "Invalid experiment request" in capsys.readouterr().err
 
 
 def test_saved_sweep_replays_all_request_fields(tmp_path, monkeypatch, sample_request, fake_runtime, capsys):

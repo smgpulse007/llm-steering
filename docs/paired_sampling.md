@@ -9,6 +9,8 @@ The experiment API and `llm-steering run` accept a `seed` (integer from 0 throug
 activation-steered generations each start with the same PyTorch CPU/CUDA seed.
 Each generation restores the caller's RNG state on exit, including exceptions.
 An outer context also preserves state during model loading and vector extraction.
+The standalone `build_vector_artifact` entry point uses the same preservation
+and serialization scope.
 Sweeps carry the same seed into every layer/coefficient combination. Greedy
 generation preserves caller state without resetting it to the request seed.
 
@@ -43,7 +45,8 @@ Inspect prompts and outputs before sharing an artifact.
 Saved sweep results are also accepted as request input. Their reproduction
 command retains the saved `base_request` and the layer/coefficient axes.
 `normalize` and `do_sample` must be JSON booleans; strings such as `"false"` are
-rejected instead of silently turning sampling on.
+rejected instead of silently turning sampling on, including for direct Python
+`ExperimentRequest` construction.
 
 ## What this controls
 
