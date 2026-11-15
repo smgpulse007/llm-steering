@@ -1,0 +1,46 @@
+{
+  "capturedAt": "2026-11-15",
+  "mode": "Actual static Pages build. No API fixture or new model inference in these frames.",
+  "imageSize": [
+    1521,
+    1014
+  ],
+  "editing": "Unaltered browser screenshots, GIF palette conversion only. No generated image is used as evidence.",
+  "frames": [
+    {
+      "file": "01-overview.jpg",
+      "route": "#overview",
+      "description": "Story and original customer-support comparison",
+      "durationMs": 4500,
+      "sha256": "60fe92eedd2539d3791272dbdb5da989faeb1c487eac1da222682597ad530a46"
+    },
+    {
+      "file": "02-experiment.jpg",
+      "route": "#experiments/customer_support_empathy",
+      "description": "Full source record and original settings",
+      "durationMs": 5000,
+      "sha256": "ca8b45bea85e2eadc76361d2c7bfde5c41529c0b4efd126d4ba83c582e124630"
+    },
+    {
+      "file": "03-learn.jpg",
+      "route": "#learn",
+      "description": "Synthetic 2D illustration, coefficient 1",
+      "durationMs": 3500,
+      "sha256": "6461347bfd85532add183207a5ec339ff5506149cb9904b3d8e10802ee2a6334"
+    },
+    {
+      "file": "04-vector.jpg",
+      "route": "#learn",
+      "description": "Keyboard changes coefficient to 2; edited vector updates",
+      "durationMs": 3000,
+      "sha256": "a5ce2ba789bddaaa71cfcb534a40797d9cf5f3f0d9b9cec5338619fd60f67ae4"
+    },
+    {
+      "file": "05-workbench.jpg",
+      "route": "#workbench",
+      "description": "Local experiment draft; no generated outputs",
+      "durationMs": 5000,
+      "sha256": "d3f4f95209d87160f2982f4851099885854f8024bf752699c4693269519f1521"
+    }
+  ]
+}

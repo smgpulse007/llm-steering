@@ -3,26 +3,29 @@
 [![CI](https://github.com/smgpulse007/llm-steering/actions/workflows/ci.yml/badge.svg)](https://github.com/smgpulse007/llm-steering/actions/workflows/ci.yml)
 [![Pages](https://github.com/smgpulse007/llm-steering/actions/workflows/pages.yml/badge.svg)](https://github.com/smgpulse007/llm-steering/actions/workflows/pages.yml)
 
-Public learning site: https://smgpulse007.github.io/llm-steering/
+## Change the activation. Inspect the behavior.
 
-`llm-steering` is a local-first **starter kit** for **activation steering**, **activation engineering**, and **representation engineering** on Gemma 4 and other open-source small language models (SLMs).
+A local-first lab for exploring how frozen open models respond to inference-time edits, without retraining weights. Define a contrast, extract a hidden-state direction, apply a pre- or post-block intervention, and inspect what changed.
 
-The repo is intentionally built around a simple thesis:
+**[Explore the Lab](https://smgpulse007.github.io/llm-steering/) · [Read a recorded experiment](https://smgpulse007.github.io/llm-steering/#experiments/customer_support_empathy) · [Run locally](#quick-start)**
 
-> Many useful behavioral shifts in a frozen language model can be elicited by editing internal activations at inference time — without retraining the model weights.
+![Actual Lab UI: recorded experiment, vector lesson and local workbench](docs/assets/steering-lab-tour.gif)
 
-This repository turns that idea into a practical engineering lab:
+Actual browser captures of the static build. Recorded model outputs, a labeled synthetic vector illustration, and an unrun workbench draft are separate views. This recording performs no new inference. [Capture provenance and design](docs/lab-experience.md).
 
-- **Hugging Face + PyTorch** for hidden-state access, vector extraction, and activation hooks
-- **Ollama** for a fast local runtime baseline
-- **source-backed research notes** for keeping implementation choices tied to the literature rather than folklore
-- **public showcase assets** for explaining steering to the general public without hand-wavy demo theater
+### From a behavior hypothesis to an inspectable experiment
 
-The current posture is a full starter kit: a reproducible Python steering path, a registry-backed FastAPI layer, and a polished local workbench UI for choosing a model, tuning steering controls, comparing outputs, and learning the math behind the intervention.
+Prompt engineering, activation edits and retraining change different parts of a model system. This project makes the activation-edit loop tangible: PyTorch hooks expose the intervention, a FastAPI service runs local experiments, and a React workbench keeps the submitted settings beside the result.
 
-## Portfolio relevance
+- **Explore without a GPU:** read the original saved examples, move a synthetic 2D vector, and follow seven lessons.
+- **Run your own comparison:** use positive/negative prompt pairs, choose a layer and coefficient, and compare baseline, prompt-only control and activation-steered output.
+- **Keep the evidence:** export a completed run with its submitted request; changing the next draft does not relabel the old result. Inspect diagnostics, hook checks and layer/coefficient sweeps.
 
-Demonstrates model behavior control, experimentation discipline, local-first AI infrastructure, FastAPI and React productization, reproducible artifacts, and public-safe LLM research engineering.
+The legacy examples show small qualitative changes, including a tutoring answer that breaks its requested sentence limit. They are examples to investigate, not evidence of a quality gain. The source records omit model ID, seed, timestamp and a prompt-only arm, so they cannot support exact replay. New local runs and their richer artifacts are a separate path.
+
+### Engineering scope
+
+Hidden-state extraction and activation hooks; explicit experiment controls; asynchronous result provenance; registry-gated model execution; local API and browser productization. The project is research software for exploring behavior, not a production behavior guarantee.
 
 ## Project thesis
 
@@ -70,26 +73,16 @@ The current repository supports:
 
 ## Steering workbench UI
 
-The repo now includes a functional steering workbench shell for the open-source release path. It is designed as an operational console rather than a landing page:
+The public front door explains the experiment before exposing configuration. Four connected views provide a path from curiosity to a local run:
 
-- model picker with explicit support badges
-- runtime/introspection status and hook-smoke validation reports
-- prompt-pair dataset editor
-- steering controls for layer, coefficient, hook stage, token scope, normalization, and decoding settings
-- preset use cases for support, tutoring, launch risk, and code review
-- baseline, prompt-only control, and activation-steered comparison panes
-- ChatGPT-style markdown rendering for model output
-- hybrid word/line diff highlighting for prompt-only vs activation-steered output
-- vector diagnostics and reliability labels
-- layer/coefficient sweep planning, execution, aggregate metrics, and manifest export
-- separate explainability tab with math, architecture flow, research trail, and model support roadmap
-- copy/download actions for rendered outputs, raw Markdown, result JSON, and vector metadata
-- artifact drawer with reproducible command metadata
-- safety gating for DiffusionGemma, Qwen3.6, and Qwen3-Coder-Next until validation passes
+| View | What you can do |
+| --- | --- |
+| Overview | Inspect a readable recorded comparison, follow the intervention diagram, and copy a platform-specific no-model quickstart. |
+| Experiments | Switch among three complete source records, read original settings and limitations, highlight text changes, and download the original record. |
+| Learn | Explore a labeled synthetic vector addition and open seven lessons with searchable documentation. |
+| Workbench | Choose a model and behavior preset, edit the experiment, then expand contrast pairs, decoding, validation and sweep controls as needed. |
 
-![Actual static console: presets prepare a draft and outputs await a local run](docs/assets/console-provenance-demo.gif)
-
-This recording shows configuration, not model inference. Results and diagnostics appear only after a local run. Editing the next draft preserves the completed run and its exports. [Result provenance and validation](docs/console-result-provenance.md).
+The local workbench retains baseline/prompt-control/steered Markdown outputs, diagnostics, run and vector exports, model introspection, hook checks, sweep plans/results, and saved artifact retrieval. Unsupported models remain gated. Results appear only after the API completes a run; editable settings are visibly separate from the completed record. [Result provenance](docs/console-result-provenance.md).
 
 Run the API:
 
@@ -151,51 +144,17 @@ Release readiness is tracked in:
 - `CHANGELOG.md` for user-facing changes
 - `.github/ISSUE_TEMPLATE/` and `.github/pull_request_template.md` for contributor intake
 
-## Real starter-kit use cases
+## Recorded use cases
 
-The repo is more useful when it is framed as a **behavior steering starter kit** rather than a generic "vector playground."
+The [original source JSON](docs/showcase/use_case_showcase.json) preserves three legacy examples. The reader displays the full responses and their original settings; it does not fill missing provenance with invented values.
 
-These examples are generated from real model runs and are meant to show practical reasons someone might care about activation steering in the first place.
+| Task | What the saved example actually shows | What to investigate next |
+| --- | --- | --- |
+| Customer support | Both replies apologize and ask for an order number; the steered wording moves toward processing a replacement. | Does the behavior generalize without inventing actions or policy commitments? |
+| Tutoring | Both explain division through a reciprocal; the steered answer adds an explanation but uses three sentences despite a two-sentence request. | Can a direction preserve correctness and instruction following together? |
+| Release planning | Both recommend a phased rollout; the wording changes. | Does the intervention improve calibration on held-out scenarios compared with a prompt-only control? |
 
-![Starter use cases](docs/assets/starter_use_cases.gif)
-
-The machine-readable output for the starter-kit demos lives in `docs/showcase/use_case_showcase.json`.
-
-### 1. Customer support de-escalation
-
-Use case: take the same base support model and nudge it toward a calmer, more empathetic reply style for damaged-order and complaint scenarios.
-
-Why it matters:
-
-- support teams often want more ownership and reassurance in replies
-- tone changes can matter even when the underlying factual task stays the same
-- steering is interesting here because it changes the *how* without retraining the model weights
-
-![Customer support steering](docs/assets/use_case_customer_support_empathy.gif)
-
-### 2. Encouraging tutoring explanations
-
-Use case: nudge a small open model toward more learner-friendly explanations for education and tutoring flows.
-
-Why it matters:
-
-- tutoring quality is not just about correctness; it is also about scaffolding and confidence-building
-- a base model may already know the answer, but steering can change how it presents that answer
-
-![Tutor steering](docs/assets/use_case_tutor_encouragement.gif)
-
-### 3. Risk-aware launch recommendations
-
-Use case: steer a model toward more calibrated rollout advice for product, operations, and release workflows.
-
-Why it matters:
-
-- teams frequently need models to sound more cautious, more explicit about tradeoffs, or more rollout-aware
-- this is a good example of steering a *decision posture* rather than only a sentiment label
-
-![Release risk steering](docs/assets/use_case_release_risk_calibration.gif)
-
-Together, these demos make the central point of the repo clearer: activation steering is useful when you want to **shift the behavior style of an open model for a real task**, not only when you want to produce a novelty sentiment demo.
+These records use layer 18, all tokens and a post-block hook; the support coefficient is 20, tutoring and release are 18. They have no recorded prompt-only comparison, model identity, seed, timestamp or diagnostics. Use them to frame a hypothesis, then evaluate your own task with controls.
 
 ## Visual overview
 
@@ -207,7 +166,7 @@ Together, these demos make the central point of the repo clearer: activation ste
 
 These assets are generated from the local showcase script and illustrate the public-facing examples referenced in this README:
 
-- ![Current console configuration preview](docs/assets/console-provenance-demo.gif)
+- [Earlier configuration-only console recording](docs/assets/console-provenance-demo.gif)
 - ![Setup terminal walkthrough](docs/assets/setup_terminal_walkthrough.gif)
 - ![Post-activation steering demo](docs/assets/post_activation_demo.gif)
 - ![Pre-activation steering demo](docs/assets/pre_activation_demo.gif)
@@ -226,13 +185,13 @@ The setup GIF can be rebuilt with:
 python scripts/build_readme_media.py --skip-ui
 ```
 
-The current console GIF is assembled from actual static-build captures in `docs/assets/console-demo/`. Run `python scripts/assemble_console_recording.py` to rebuild it. The earlier `workbench_ui_overview.gif` is retained as a historical artifact and is no longer the current console preview.
+The current Lab tour is assembled from actual browser captures in `docs/assets/lab-tour/`; run `python scripts/assemble_lab_tour.py` to rebuild it with Pillow installed. The earlier console recording and `workbench_ui_overview.gif` are retained as historical artifacts, not the current UI.
 
 For terminal-recording enthusiasts: `docs/tapes/` includes optional VHS notes so you can create terminal-native GIFs on compatible setups. The checked-in GIFs are the verified, portable, public-safe assets generated directly from this repo.
 
 ## Why this repo exists
 
-There are many ways to talk about steering vectors and surprisingly few repos that make the whole loop legible from start to finish.
+This lab makes the intervention and its evidence visible in one workflow.
 
 This repo exists to provide an end-to-end reference for:
 
@@ -242,7 +201,7 @@ This repo exists to provide an end-to-end reference for:
 - comparing baseline and steered generations,
 - and documenting what actually changed.
 
-It is deliberately optimized for **understanding** rather than leaderboard theater.
+Its focus is an inspectable experiment: understand the mechanism, preserve the settings and evaluate the result.
 
 ## The math in one page
 
@@ -293,9 +252,9 @@ If you want the fuller story, see `docs/methodology.md`.
 
 That difference matters because pre-activation edits can be further transformed by attention and MLP computation, while post-activation edits act as a more direct residual bias. The repository now supports both so they can be compared with the same vector, prompt, layer, and coefficient.
 
-## What is tried and tested
+## Historical model-run environment
 
-The following has been verified in this workspace:
+The original project records the following local environment. These are historical execution notes, not a fresh GPU validation of the current UI:
 
 - Windows workstation
 - NVIDIA GeForce RTX 4090 (24 GB VRAM)

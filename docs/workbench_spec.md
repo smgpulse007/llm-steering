@@ -4,12 +4,9 @@ This document defines the target behavior for the `llm-steering` workbench. It e
 
 ## Product Shape
 
-The workbench has two primary modes:
+The public app opens with **Overview**, then links to **Experiments**, **Learn** and **Workbench**. The story-led front door introduces the problem, shows a full recorded comparison and provides a local quickstart. The workbench remains the execution surface; advanced controls use progressive disclosure. Legacy `#workbench`, `#docs/...` and `#explain/...` routes remain supported.
 
-1. **Console** - practical steering execution.
-2. **Explainability** - learning, math, architecture, local documentation, and model-readiness review.
-
-The first screen should remain the Console. The app is a tool surface, not a landing page.
+Recorded examples, synthetic learning illustrations, editable experiment drafts and completed local runs must remain visibly distinct. The current visual and provenance contract is in [Lab experience](lab-experience.md).
 
 ## Console Requirements
 
@@ -29,7 +26,7 @@ The Console must let a user:
 
 ### Model Picker
 
-The model picker must avoid horizontal scrolling. Long model names, status badges, and role text must wrap inside the card. Cards should show:
+The compact model selector must avoid horizontal scrolling. The selected model panel should show:
 
 - display name
 - role
@@ -42,7 +39,7 @@ Unsupported models are allowed to appear in the picker, but steering execution m
 
 ### Presets
 
-Preset cards should load complete console state except the selected model ID. Required starter presets:
+The behavior selector should load complete draft state except the selected model ID. It must preserve any completed run and its captured configuration. Required starter presets:
 
 - customer support empathy
 - tutor scaffolding
