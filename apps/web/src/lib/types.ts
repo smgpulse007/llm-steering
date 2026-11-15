@@ -55,6 +55,7 @@ export type HookSmokeReport = {
 };
 
 export type ExperimentPayload = {
+  seed?: number;
   model_id: string;
   system_prompt: string;
   user_prompt: string;

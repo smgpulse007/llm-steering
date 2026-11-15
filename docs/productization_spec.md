@@ -1,6 +1,6 @@
 # llm-steering Open Source Productization Spec
 
-Status: implementation contract with productization and docs-first slices applied
+Status: historical July productization plan; see [current Lab experience](lab-experience.md) for the November 2026 UI contract
 Branch: `codex/docs-first-pages`
 Date: 2026-07-05
 Owner: smgpulse007

@@ -138,12 +138,9 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function fetchModels(): Promise<ModelRegistryEntry[]> {
-  try {
-    const payload = await requestJson<{ models: ModelRegistryEntry[] }>("/api/models");
-    return payload.models;
-  } catch {
-    return fallbackModels;
-  }
+  if (import.meta.env.MODE === "pages") return fallbackModels;
+  const payload = await requestJson<{ models: ModelRegistryEntry[] }>("/api/models");
+  return payload.models;
 }
 
 export async function introspectModel(modelId: string): Promise<IntrospectionReport> {
